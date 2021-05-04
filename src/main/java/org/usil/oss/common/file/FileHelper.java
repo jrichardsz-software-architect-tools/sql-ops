@@ -1,0 +1,67 @@
+package org.usil.oss.common.file;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class FileHelper {
+
+  public static void detectRequiredPairs(ArrayList<String> mainFiles, ArrayList<String> otherFiles,
+      String expectedExtension) throws Exception {
+    if (mainFiles.size() != otherFiles.size()) {
+      throw new Exception(
+          String.format("The number of files does not match: # scripts-count=%s rollbacks_count=%s.", mainFiles.size(), otherFiles.size())
+              + " If you have 3 .sql files, 3 .rollback files are required.");
+    }
+
+    for (String mainFile : mainFiles) {
+      if (!otherFiles.contains(mainFile + expectedExtension)) {
+        throw new Exception(String.format("This file %s does not have its required file %s",
+            mainFile, expectedExtension));
+      }
+    }
+
+  }
+
+  public static String getFileAsStringFromClasspath(String file) {
+    ClassLoader classLoader = FileHelper.class.getClassLoader();
+    InputStream classPathFileStream = classLoader.getResourceAsStream(file);
+    Scanner scanner = new Scanner(classPathFileStream);
+    scanner.useDelimiter("\\A");
+    String fileContent = scanner.hasNext() ? scanner.next() : "";
+    scanner.close();
+    return fileContent;
+  }
+
+  public static ArrayList<String> readFilesAtRoot(File dir, String filterRegexString)
+      throws Exception {
+
+    ArrayList<String> fileTree = new ArrayList<String>();
+    if (dir == null) {
+      throw new Exception("root dir is null");
+    }
+
+    if (dir.listFiles().length == 0) {
+      return fileTree;
+    }
+
+    for (File entry : dir.listFiles()) {
+      if (entry.isFile()) {
+        Pattern pattern = Pattern.compile(filterRegexString);
+        Matcher filterRegex = pattern.matcher(entry.getName());
+        if (filterRegex.find()) {
+          fileTree.add(entry.getAbsolutePath());
+        }
+      }
+    }
+
+    Collections.sort(fileTree);
+
+    return fileTree;
+  }
+
+}
