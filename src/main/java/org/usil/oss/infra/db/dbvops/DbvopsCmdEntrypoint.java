@@ -13,24 +13,25 @@ import org.usil.oss.common.exception.ExceptionHelper;
 import org.usil.oss.common.file.ClassPathProperties;
 import org.usil.oss.common.file.FileHelper;
 import org.usil.oss.common.logger.LoggerHelper;
-import org.usil.oss.common.string.StringHelper;
+import org.usil.oss.common.model.ExecutionMetadata;
 
 public class DbvopsCmdEntrypoint {
 
-  private final static Logger logger = LogManager.getLogger(DbvopsCmdEntrypoint.class);
+  private final Logger logger = LogManager.getLogger(DbvopsCmdEntrypoint.class);
 
-  public static void main(String[] args) throws Exception {
+  private DatabaseHelper databaseHelper = new DatabaseHelper();
+
+  public ExecutionMetadata perform(String[] args) throws Exception {
     ArgumentsHelper argumentsHelper = new ArgumentsHelper();
     CommandLine commandLine = argumentsHelper.getArguments(args);
 
-    HashMap<String, String> oracleParams =
-        getOracleParameters(commandLine.getOptionValue("dbvops_env_params_id"), commandLine);
+    HashMap<String, String> databaseParams = getDatabaseParametersFromCli(commandLine);
 
-    String host = oracleParams.get("database_host");
-    int port = Integer.parseInt(oracleParams.get("database_port"));
-    String name = oracleParams.get("database_name");
-    String user = oracleParams.get("database_user");
-    String password = oracleParams.get("database_password");
+    String host = databaseParams.get("database_host");
+    int port = Integer.parseInt(databaseParams.get("database_port"));
+    String name = databaseParams.get("database_name");
+    String user = databaseParams.get("database_user");
+    String password = databaseParams.get("database_password");
 
     String scriptsFolder = commandLine.getOptionValue("scripts_folder");
     String engine = commandLine.getOptionValue("engine");
@@ -39,24 +40,27 @@ public class DbvopsCmdEntrypoint {
       LoggerHelper.setDebugLevel();
     }
 
-    ArrayList<String> scripts = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".sql$");
+    ArrayList<String> queries = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".sql$");
     logger.info("scripts");
-    logger.info(scripts);
+    logger.info(queries);
 
-    ArrayList<String> rollback = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".rollback$");
+    ArrayList<String> rollbacks = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".rollback$");
     logger.info("rollbacks");
-    logger.info(rollback);
+    logger.info(rollbacks);
 
-    FileHelper.detectRequiredPairs(scripts, rollback, ".rollback");
-
-    DatabaseHelper databaseHelper = new DatabaseHelper();
+    FileHelper.detectRequiredPairs(queries, rollbacks, ".rollback");
 
     String sqlShowErrors = null;
-    ArrayList<?> beforeErrors = null;
+    ArrayList<?> beforeErrors = new ArrayList<>();
 
-    if (ClassPathProperties.hasProperty(engine + ".showErrorQueryFile")) {
+    ArrayList<ArrayList<?>> successOutputs = new ArrayList<>();
+    ArrayList<ArrayList<?>> errorOutputs = new ArrayList<>();
+    ArrayList<?> afterErrors = new ArrayList<>();
+
+    if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
       sqlShowErrors = FileHelper.getFileAsStringFromClasspath(
-          ClassPathProperties.getProperty(engine + ".showErrorQueryFile"));
+          ClassPathProperties.getProperty(engine + ".errorQueryFile"));
+
       beforeErrors = databaseHelper.executeSimpleScriptString(engine, host, port, name, user,
           password, sqlShowErrors);
 
@@ -64,27 +68,28 @@ public class DbvopsCmdEntrypoint {
       logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
     }
 
-    ArrayList<String> executedScripts = new ArrayList<String>();
+    ArrayList<String> executedQueries = new ArrayList<String>();
+    ArrayList<String> executedRollbacks = new ArrayList<String>();
     String currentScript = null;
     try {
-      for (String scriptPath : scripts) {
+      for (String scriptPath : queries) {
         currentScript = scriptPath;
-        databaseHelper.executeSimpleScriptFile(engine, host, port, name, user, password,
-            currentScript);
+
+        ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port, name,
+            user, password, currentScript);
         logger.info(String.format("script: %s , status: success",
             currentScript.replace(scriptsFolder, "")));
-        executedScripts.add(currentScript);
-
-        if (ClassPathProperties.hasProperty(engine + ".showErrorQueryFile")) {
-          // detect if errors increased
-          ArrayList<?> thisErrors = databaseHelper.executeSimpleScriptString(engine, host, port,
-              name, user, password, sqlShowErrors);
-          if (thisErrors.size() > beforeErrors.size()) {
-            logger.info("Last script caused new errors.");
-            logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
-          }
+        executedQueries.add(currentScript);
+        successOutputs.add(scriptOutput);
+      }
+      if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
+        // detect if errors increased
+        afterErrors = databaseHelper.executeSimpleScriptString(engine, host, port, name, user,
+            password, sqlShowErrors);
+        if (afterErrors.size() > beforeErrors.size()) {
+          logger.info("scripts could caused new errors.");
+          logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
         }
-
       }
     } catch (Exception e) {
       String errorMessage =
@@ -97,41 +102,43 @@ public class DbvopsCmdEntrypoint {
       }
 
       logger.info("Rollback scrtips will be executed");
-      if (executedScripts.size() <= 1) {
+      if (executedQueries.size() < 1) {
         logger.info("Rollback is not required because error was throwed in first script");
-        System.exit(1);
+      } else {
+        Collections.reverse(executedQueries);
+
+        for (String executedScript : executedQueries) {
+          ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port,
+              name, user, password, executedScript + ".rollback");
+          logger.info(String.format("rollback: %s , status: success",
+              currentScript.replace(scriptsFolder, "")));
+          errorOutputs.add(scriptOutput);
+          executedRollbacks.add(executedScript + ".rollback");
+        }
       }
-
-      Collections.reverse(executedScripts);
-
-      for (String executedScript : executedScripts) {
-        databaseHelper.executeSimpleScriptFile(engine, host, port, name, user, password,
-            executedScript + ".rollback");
-        logger.info(String.format("rollback: %s , status: success",
-            currentScript.replace(scriptsFolder, "")));
-      }
-
     }
 
     logger.info("By JRichardsz");
-    System.exit(0);
+
+    ExecutionMetadata executionMetadata = new ExecutionMetadata();
+    executionMetadata.setAfterErrors(afterErrors);
+    executionMetadata.setBeforeErrors(beforeErrors);
+    executionMetadata.setQueryScripts(queries);
+    executionMetadata.setRollbackScripts(rollbacks);
+    executionMetadata.setExecutedQueryScripts(executedQueries);
+    executionMetadata.setExecutedRollbackScripts(executedRollbacks);
+    executionMetadata.setSuccessOutputs(successOutputs);
+    executionMetadata.setErrorOutputs(errorOutputs);
+    return executionMetadata;
   }
 
-  private static HashMap<String, String> getOracleParameters(String oracleParamsId,
-      CommandLine commandLine) {
-
+  private HashMap<String, String> getDatabaseParametersFromCli(CommandLine commandLine) {
     HashMap<String, String> params = new HashMap<String, String>();
-    if (oracleParamsId != null && !oracleParamsId.isEmpty()) {
-      String rawParameters = System.getenv(oracleParamsId);
-      return StringHelper.severalKeyValuesInlineToMap(rawParameters);
-    } else {
-      params.put("database_host", commandLine.getOptionValue("database_host"));
-      params.put("database_port", commandLine.getOptionValue("database_port"));
-      params.put("database_name", commandLine.getOptionValue("database_name"));
-      params.put("database_user", commandLine.getOptionValue("database_user"));
-      params.put("database_password", commandLine.getOptionValue("database_password"));
-    }
-
+    params.put("database_host", commandLine.getOptionValue("database_host"));
+    params.put("database_port", commandLine.getOptionValue("database_port"));
+    params.put("database_name", commandLine.getOptionValue("database_name"));
+    params.put("database_user", commandLine.getOptionValue("database_user"));
+    params.put("database_password", commandLine.getOptionValue("database_password"));
     return params;
   }
 }

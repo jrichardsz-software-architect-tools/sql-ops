@@ -1,6 +1,7 @@
 package org.usil.oss.common.file;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +72,7 @@ public class FileHelperTest {
   }
 
   @Test
-  public void detectRequiredPairErrorNumber() throws Exception {
+  public void detectRequiredPairsError() throws Exception {
 
     ArrayList<String> mainFiles = new ArrayList<String>();
     mainFiles.add("001.sql");
@@ -84,8 +85,8 @@ public class FileHelperTest {
 
     try {
       FileHelper.detectRequiredPairs(mainFiles, otherFiles, ".rollback");
+      fail("My method didn't throw when I expected it to: 002.sql.rollback should be required");
     } catch (Exception e) {
-      assertEquals("The number of files does not match.", e.getMessage());
     }
   }
 

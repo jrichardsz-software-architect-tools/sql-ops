@@ -1,14 +1,16 @@
 package org.usil.oss.common.database;
 
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.usil.oss.common.file.ClassPathProperties;
@@ -48,7 +50,6 @@ public class DatabaseHelper {
 
   public ArrayList<?> executeSimpleScriptFile(String engine, String host, int port, String sid,
       String user, String password, String queryAbsoluteFilePath) throws Exception {
-
     String sqlString = null;
 
     try {
@@ -61,24 +62,58 @@ public class DatabaseHelper {
 
   }
 
-  public ArrayList<?> executeSimpleScriptString(String engine, String host, int port, String sid,
+  public ArrayList<?> executeSimpleScriptString1(String engine, String host, int port, String sid,
       String user, String password, String sqlString) throws Exception {
 
     Connection c = getConnection(engine, host, port, sid, user, password);
 
     try {
-      CallableStatement cs = c.prepareCall(sqlString);
-      cs.execute();
+      /*
+       * CallableStatement cs = c.prepareCall(sqlString); cs.execute();
+       */
+      Statement stmt = c.createStatement();
+      stmt.execute(sqlString);
 
-      ResultSet rs = cs.getResultSet();
-      if (rs == null) {
-        return new ArrayList<Object>();
-      }
+      // ResultSet rs = cs.getResultSet();
+      // if (rs == null) {
+      // return new ArrayList<Object>();
+      // }
 
-      ArrayList<?> result = results2Array(rs);
+      ArrayList<?> result = new ArrayList<Object>();
+      // ArrayList<?> result = results2Array(rs);
 
-      cs.close();
+      stmt.close();
       c.close();
+      return result;
+    } catch (Exception e) {
+      throw new Exception("Failed to execute sql string: " + sqlString, e);
+    }
+  }
+
+  public ArrayList<?> executeSimpleScriptString(String engine, String host, int port, String sid,
+      String user, String password, String sqlString) throws Exception {    
+    
+    Connection c = getConnection(engine, host, port, sid, user, password);
+    try {
+      /*
+       * CallableStatement cs = c.prepareCall(sqlString); cs.execute();
+       */
+      // Statement stmt = c.createStatement();
+      // stmt.execute(sqlString);
+
+      // ResultSet rs = cs.getResultSet();
+      // if (rs == null) {
+      // return new ArrayList<Object>();
+      // }
+
+      ScriptRunner runner = new ScriptRunner(c, true, true);
+      ArrayList<?> result = runner.runScript(new StringReader(sqlString));
+
+      // ArrayList<?> result = new ArrayList<Object>();
+      // ArrayList<?> result = results2Array(rs);
+
+      // stmt.close();
+      // c.close();
       return result;
     } catch (Exception e) {
       throw new Exception("Failed to execute sql string: " + sqlString, e);

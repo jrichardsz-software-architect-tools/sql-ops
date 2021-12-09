@@ -37,9 +37,9 @@ public class TableAscciHelperTest {
     String table = TableAscciHelper.createSimpleTable(data);
     String[] rows = table.split("\n");
     assertEquals(3, rows.length);
-    assertEquals("a||aa||aaa||", rows[0]);
-    assertEquals("b||bb||bbb||", rows[1]);
-    assertEquals("c||cc||ccc||", rows[2]);
+    assertEquals("a  ||aa  ||aaa  ||", rows[0]);
+    assertEquals("b  ||bb  ||bbb  ||", rows[1]);
+    assertEquals("c  ||cc  ||ccc  ||", rows[2]);
   }
 
 }
