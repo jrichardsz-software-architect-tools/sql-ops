@@ -1,4 +1,4 @@
-package org.usil.oss.infra.db.dbvops;
+package org.usil.oss.common.cli;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,7 +36,7 @@ public class ArgumentsHelper {
     o6.setRequired(false);
     options.addOption(o6);
 
-    Option o7 = new Option("en", "engine", true, "database engine. Support: oracle");
+    Option o7 = new Option("en", "engine", true, "database engine. current support: oracle and mysql");
     o7.setRequired(false);
     options.addOption(o7);
 

@@ -1,21 +1,26 @@
 package org.usil.oss.common.file;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.core.util.IOUtils;
 
 public class FileHelper {
 
   public static void detectRequiredPairs(ArrayList<String> mainFiles, ArrayList<String> otherFiles,
       String expectedExtension) throws Exception {
     if (mainFiles.size() != otherFiles.size()) {
-      throw new Exception(
-          String.format("The number of files does not match: # scripts-count=%s rollbacks_count=%s.", mainFiles.size(), otherFiles.size())
-              + " If you have 3 .sql files, 3 .rollback files are required.");
+      throw new Exception(String.format(
+          "The number of files does not match: # scripts-count=%s rollbacks_count=%s.",
+          mainFiles.size(), otherFiles.size())
+          + " If you have 3 .sql files, 3 .rollback files are required.");
     }
 
     for (String mainFile : mainFiles) {
@@ -27,14 +32,10 @@ public class FileHelper {
 
   }
 
-  public static String getFileAsStringFromClasspath(String file) {
+  public static String getFileAsStringFromClasspath(String file) throws IOException {
     ClassLoader classLoader = FileHelper.class.getClassLoader();
     InputStream classPathFileStream = classLoader.getResourceAsStream(file);
-    Scanner scanner = new Scanner(classPathFileStream);
-    scanner.useDelimiter("\\A");
-    String fileContent = scanner.hasNext() ? scanner.next() : "";
-    scanner.close();
-    return fileContent;
+    return IOUtils.toString(new InputStreamReader(classPathFileStream));
   }
 
   public static ArrayList<String> readFilesAtRoot(File dir, String filterRegexString)

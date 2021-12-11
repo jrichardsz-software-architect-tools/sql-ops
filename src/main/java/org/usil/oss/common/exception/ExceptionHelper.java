@@ -4,9 +4,8 @@ public class ExceptionHelper {
 
   public static String summarizeTrace(Throwable throwable, boolean pretty) {
     StringBuilder builder = new StringBuilder();
-    builder.append("Error stack:");
     while (throwable != null) {
-      if(pretty) {
+      if (pretty) {
         builder.append("\n\n");
       }
       builder.append(

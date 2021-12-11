@@ -1,13 +1,19 @@
 package org.usil.oss.common.string;
 
+import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
 public class StringHelperTest {
+
+  @Before
+  public void stringHelperConstructor() throws Exception {
+    new StringHelper();
+  }
 
   @Test
   public void splitByEmptyLinesOne() throws Exception {

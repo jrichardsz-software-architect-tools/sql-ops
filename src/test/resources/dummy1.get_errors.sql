@@ -1,0 +1,1 @@
+show dummy1 errors;

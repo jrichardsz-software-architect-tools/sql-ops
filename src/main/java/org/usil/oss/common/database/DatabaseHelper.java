@@ -90,7 +90,7 @@ public class DatabaseHelper {
     }
   }
 
-  public ArrayList<?> executeSimpleScriptString(String engine, String host, int port, String sid,
+  public ArrayList executeSimpleScriptString(String engine, String host, int port, String sid,
       String user, String password, String sqlString) throws Exception {    
     
     Connection c = getConnection(engine, host, port, sid, user, password);

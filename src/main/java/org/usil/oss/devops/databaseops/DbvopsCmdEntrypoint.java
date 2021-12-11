@@ -1,4 +1,4 @@
-package org.usil.oss.infra.db.dbvops;
+package org.usil.oss.devops.databaseops;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,6 +8,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.usil.oss.common.ascii.TableAscciHelper;
+import org.usil.oss.common.cli.ArgumentsHelper;
 import org.usil.oss.common.database.DatabaseHelper;
 import org.usil.oss.common.exception.ExceptionHelper;
 import org.usil.oss.common.file.ClassPathProperties;
@@ -94,14 +95,14 @@ public class DbvopsCmdEntrypoint {
     } catch (Exception e) {
       String errorMessage =
           String.format("script: %s , status: error", currentScript.replace(scriptsFolder, ""));
-      if (logger.isDebugEnabled()) {
+      if (commandLine.hasOption("verbose_log")) {
         logger.error(errorMessage, e);
       } else {
         logger.error(errorMessage);
         logger.error(ExceptionHelper.summarizeTrace(e, true));
       }
 
-      logger.info("Rollback scrtips will be executed");
+      logger.info("Rollback scripts will be executed");
       if (executedQueries.size() < 1) {
         logger.info("Rollback is not required because error was throwed in first script");
       } else {
@@ -141,4 +142,6 @@ public class DbvopsCmdEntrypoint {
     params.put("database_password", commandLine.getOptionValue("database_password"));
     return params;
   }
+  
+  
 }
