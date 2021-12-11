@@ -10,7 +10,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.usil.oss.common.file.ClassPathProperties;
@@ -62,37 +61,11 @@ public class DatabaseHelper {
 
   }
 
-  public ArrayList<?> executeSimpleScriptString1(String engine, String host, int port, String sid,
-      String user, String password, String sqlString) throws Exception {
 
-    Connection c = getConnection(engine, host, port, sid, user, password);
-
-    try {
-      /*
-       * CallableStatement cs = c.prepareCall(sqlString); cs.execute();
-       */
-      Statement stmt = c.createStatement();
-      stmt.execute(sqlString);
-
-      // ResultSet rs = cs.getResultSet();
-      // if (rs == null) {
-      // return new ArrayList<Object>();
-      // }
-
-      ArrayList<?> result = new ArrayList<Object>();
-      // ArrayList<?> result = results2Array(rs);
-
-      stmt.close();
-      c.close();
-      return result;
-    } catch (Exception e) {
-      throw new Exception("Failed to execute sql string: " + sqlString, e);
-    }
-  }
 
   public ArrayList executeSimpleScriptString(String engine, String host, int port, String sid,
-      String user, String password, String sqlString) throws Exception {    
-    
+      String user, String password, String sqlString) throws Exception {
+
     Connection c = getConnection(engine, host, port, sid, user, password);
     try {
       /*
@@ -120,21 +93,5 @@ public class DatabaseHelper {
     }
   }
 
-  private ArrayList<ArrayList<Object>> results2Array(ResultSet rs) throws SQLException {
-    ResultSetMetaData metaData = rs.getMetaData();
-    int columns = metaData.getColumnCount();
 
-    ArrayList<ArrayList<Object>> al = new ArrayList<ArrayList<Object>>();
-
-    while (rs.next()) {
-      ArrayList<Object> record = new ArrayList<Object>();
-
-      for (int i = 1; i <= columns; i++) {
-        Object value = rs.getObject(i);
-        record.add(value);
-      }
-      al.add(record);
-    }
-    return al;
-  }
 }
