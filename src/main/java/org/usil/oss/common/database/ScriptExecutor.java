@@ -1,9 +1,5 @@
 package org.usil.oss.common.database;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
 /*
  * Added additional null checks when closing the ResultSet and Statements.
  *
@@ -35,7 +31,7 @@ import java.io.FileReader;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.Reader;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -49,13 +45,12 @@ import java.util.regex.Pattern;
  * Tool to run database scripts. This version of the script can be found at
  * https://gist.github.com/gists/831762/
  */
-public class ScriptRunner {
+public class ScriptExecutor {
 
   private static final String DEFAULT_DELIMITER = ";";
   private static final String DELIMITER_LINE_REGEX = "(?i)DELIMITER.+";
   private static final String DELIMITER_LINE_SPLIT_REGEX = "(?i)DELIMITER";
 
-  private final Connection connection;
   private final boolean stopOnError;
   private final boolean autoCommit;
   private String delimiter = DEFAULT_DELIMITER;
@@ -68,8 +63,7 @@ public class ScriptRunner {
    * @param autoCommit
    * @param stopOnError
    */
-  public ScriptRunner(Connection connection, boolean autoCommit, boolean stopOnError) {
-    this.connection = connection;
+  public ScriptExecutor(boolean autoCommit, boolean stopOnError) {
     this.autoCommit = autoCommit;
     this.stopOnError = stopOnError;
   }
@@ -84,51 +78,19 @@ public class ScriptRunner {
   }
 
   /**
-   * Runs an SQL script (read in using the Reader parameter)
-   *
-   * @param filepath - the filepath of the script to run. May be relative to the userDirectory.
-   */
-  public void runScript(String filepath) throws IOException, SQLException {
-    File file = new File(filepath);
-    this.runScript(new BufferedReader(new FileReader(file)));
-  }
-
-
-  /**
-   * Runs an SQL script (read in using the Reader parameter).
-   * 
-   * @param reader - the source of the script
-   * @throws SQLException if any SQL errors occur
-   * @throws IOException if there is an error reading from the Reader
-   */
-  public ArrayList<?> runScript(Reader reader) throws IOException, SQLException {
-    try {
-      boolean originalAutoCommit = connection.getAutoCommit();
-      try {
-        if (originalAutoCommit != autoCommit) {
-          connection.setAutoCommit(autoCommit);
-        }
-        return runScript(connection, reader);
-      } finally {
-        connection.setAutoCommit(originalAutoCommit);
-      }
-    } catch (IOException e) {
-      throw e;
-    } catch (SQLException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RuntimeException("Error running script.  Cause: " + e, e);
-    }
-  }
-
-  /**
    * Runs an SQL script (read in using the Reader parameter) using the connection passed in.
    * 
    * @param conn - the connection to use for the script
    * @param reader - the source of the script
    * @throws Exception
    */
-  private ArrayList<?> runScript(Connection conn, Reader reader) throws Exception {
+  public ArrayList runScript(Connection conn, String scriptString) throws Exception {
+    StringReader reader = new StringReader(scriptString);
+    boolean originalAutoCommit = conn.getAutoCommit();
+    if (originalAutoCommit != autoCommit) {
+      conn.setAutoCommit(autoCommit);
+    }
+
     StringBuffer command = null;
     ArrayList<ArrayList<Object>> results = new ArrayList<ArrayList<Object>>();
     try {
@@ -219,6 +181,8 @@ public class ScriptRunner {
       throw new Exception("Error executing: " + command, e);
     } catch (IOException e) {
       throw new Exception("Error executing: " + command, e);
+    } finally {
+      conn.setAutoCommit(originalAutoCommit);
     }
 
     return results;
