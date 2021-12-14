@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.usil.oss.common.database.DatabaseHelper;
+import org.usil.oss.common.database.DatabaseExecutor;
 import org.usil.oss.common.model.ExecutionMetadata;
 import org.usil.oss.devops.databaseops.DbvopsCmdEntrypoint;
 
@@ -19,7 +19,7 @@ import org.usil.oss.devops.databaseops.DbvopsCmdEntrypoint;
 public class DbvopsCmdEntrypointTest {
 
   @Mock
-  private DatabaseHelper databaseHelper;
+  private DatabaseExecutor databaseHelper;
 
   @InjectMocks
   private DbvopsCmdEntrypoint cmdEntrypoint;

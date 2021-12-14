@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.usil.oss.common.ascii.TableAscciHelper;
 import org.usil.oss.common.cli.ArgumentsHelper;
-import org.usil.oss.common.database.DatabaseHelper;
+import org.usil.oss.common.database.DatabaseExecutor;
 import org.usil.oss.common.exception.ExceptionHelper;
 import org.usil.oss.common.file.ClassPathProperties;
 import org.usil.oss.common.file.FileHelper;
@@ -20,7 +20,7 @@ public class DbvopsCmdEntrypoint {
 
   private final Logger logger = LogManager.getLogger(DbvopsCmdEntrypoint.class);
 
-  private DatabaseHelper databaseHelper = new DatabaseHelper();
+  private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
   public ExecutionMetadata perform(String[] args) throws Exception {
     ArgumentsHelper argumentsHelper = new ArgumentsHelper();

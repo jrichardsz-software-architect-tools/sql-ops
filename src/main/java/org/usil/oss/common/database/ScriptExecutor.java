@@ -1,6 +1,12 @@
 package org.usil.oss.common.database;
 
 /*
+ * Support for DELIMITER usage https://www.mysqltutorial.org/mysql-stored-procedure/mysql-delimiter/
+ * https://www.postgresql.org/docs/8.1/sql-keywords-appendix.html
+ * https://docs.oracle.com/cd/E57185_01/ESBTR/delimiter.html
+ */
+
+/*
  * Added additional null checks when closing the ResultSet and Statements.
  *
  * Thanks to pihug12 and Grzegorz Oledzki at stackoverflow.com
@@ -34,7 +40,6 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -53,11 +58,10 @@ public class ScriptExecutor {
 
   private final boolean stopOnError;
   private final boolean autoCommit;
-  private String delimiter = DEFAULT_DELIMITER;
+  private String delimiter = null;
   private boolean fullLineDelimiter = false;
 
   /**
-   * Default constructor.
    * 
    * @param connection
    * @param autoCommit
@@ -66,16 +70,23 @@ public class ScriptExecutor {
   public ScriptExecutor(boolean autoCommit, boolean stopOnError) {
     this.autoCommit = autoCommit;
     this.stopOnError = stopOnError;
+    this.delimiter = DEFAULT_DELIMITER;
   }
 
   /**
-   * @param delimiter
-   * @param fullLineDelimiter
+   * 
+   * @param connection
+   * @param autoCommit
+   * @param stopOnError
    */
-  public void setDelimiter(String delimiter, boolean fullLineDelimiter) {
+  public ScriptExecutor(boolean autoCommit, boolean stopOnError, String delimiter,
+      boolean fullLineDelimiter) {
+    this.autoCommit = autoCommit;
+    this.stopOnError = stopOnError;
     this.delimiter = delimiter;
     this.fullLineDelimiter = fullLineDelimiter;
   }
+
 
   /**
    * Runs an SQL script (read in using the Reader parameter) using the connection passed in.
@@ -86,10 +97,10 @@ public class ScriptExecutor {
    */
   public ArrayList runScript(Connection conn, String scriptString) throws Exception {
     StringReader reader = new StringReader(scriptString);
-    boolean originalAutoCommit = conn.getAutoCommit();
-    if (originalAutoCommit != autoCommit) {
-      conn.setAutoCommit(autoCommit);
-    }
+    // boolean originalAutoCommit = conn.getAutoCommit();
+    // if (originalAutoCommit != this.autoCommit) {
+    // conn.setAutoCommit(this.autoCommit);
+    // }
 
     StringBuffer command = null;
     ArrayList<ArrayList<Object>> results = new ArrayList<ArrayList<Object>>();
@@ -103,12 +114,17 @@ public class ScriptExecutor {
         String trimmedLine = line.trim();
         if (trimmedLine.startsWith("--")) {
           // Do nothing
-        } else if (trimmedLine.length() < 1 || trimmedLine.startsWith("//")) {
+        } else if (trimmedLine.startsWith("//")) {
           // Do nothing
-        } else if (trimmedLine.length() < 1 || trimmedLine.startsWith("--")) {
+        } else if (trimmedLine.startsWith("--")) {
           // Do nothing
-        } else if (!fullLineDelimiter && trimmedLine.endsWith(getDelimiter())
-            || fullLineDelimiter && trimmedLine.equals(getDelimiter())) {
+        } else if (trimmedLine.length() < 1) {
+          // Do nothing
+        } else if (trimmedLine.startsWith("--")) {
+          // Do nothing
+        } // if contains delimiters
+        else if (!fullLineDelimiter && trimmedLine.endsWith(this.delimiter)
+            || fullLineDelimiter && trimmedLine.equals(this.delimiter)) {
 
           Pattern pattern = Pattern.compile(DELIMITER_LINE_REGEX);
           Matcher matcher = pattern.matcher(trimmedLine);
@@ -122,41 +138,34 @@ public class ScriptExecutor {
             trimmedLine = line.trim();
           }
 
-          command.append(line.substring(0, line.lastIndexOf(getDelimiter())));
+          command.append(line.substring(0, line.lastIndexOf(this.delimiter)));
           command.append(" ");
           Statement statement = conn.createStatement();
 
           boolean hasResults = false;
-          if (stopOnError) {
+          try {
             hasResults = statement.execute(command.toString());
+          } catch (Exception e) {
+            if (stopOnError) {
+              throw e;
+            }
           }
 
-          if (autoCommit && !conn.getAutoCommit()) {
+          if (this.autoCommit) {
             conn.commit();
           }
 
           ResultSet rs = statement.getResultSet();
           if (hasResults && rs != null) {
-
-            results.addAll(results2Array(rs));
-
+            results.addAll(DatabaseHelper.resulsetToArray(rs));
           }
 
           command = null;
-          try {
-            if (rs != null) {
-              rs.close();
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
+          if (rs != null) {
+            rs.close();
           }
-          try {
-            if (statement != null) {
-              statement.close();
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
-            // Ignore to workaround a bug in Jakarta DBCP
+          if (statement != null) {
+            statement.close();
           }
         } else {
           Pattern pattern = Pattern.compile(DELIMITER_LINE_REGEX);
@@ -174,39 +183,26 @@ public class ScriptExecutor {
           command.append(" ");
         }
       }
-      if (!autoCommit) {
-        conn.commit();
-      }
+      // if (!this.autoCommit) {
+      // conn.commit();
+      // }
     } catch (SQLException e) {
       throw new Exception("Error executing: " + command, e);
     } catch (IOException e) {
       throw new Exception("Error executing: " + command, e);
     } finally {
-      conn.setAutoCommit(originalAutoCommit);
+      // conn.setAutoCommit(originalAutoCommit);
+      if (conn != null) {
+        conn.close();
+      }
+
     }
 
     return results;
   }
 
-  private String getDelimiter() {
-    return delimiter;
-  }
-
-  private ArrayList<ArrayList<Object>> results2Array(ResultSet rs) throws SQLException {
-    ResultSetMetaData metaData = rs.getMetaData();
-    int columns = metaData.getColumnCount();
-
-    ArrayList<ArrayList<Object>> al = new ArrayList<ArrayList<Object>>();
-
-    while (rs.next()) {
-      ArrayList<Object> record = new ArrayList<Object>();
-
-      for (int i = 1; i <= columns; i++) {
-        Object value = rs.getObject(i);
-        record.add(value);
-      }
-      al.add(record);
-    }
-    return al;
+  private void setDelimiter(String delimiter, boolean fullLineDelimiter) {
+    this.delimiter = delimiter;
+    this.fullLineDelimiter = fullLineDelimiter;
   }
 }

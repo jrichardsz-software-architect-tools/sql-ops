@@ -1,38 +1,29 @@
 package org.usil.oss.common.database;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 
 public class DatabaseHelper {
 
-  private ScriptExecutor scriptExecutor = new ScriptExecutor(true, true);
-  private ConnectionHelper connectionHelper = new ConnectionHelper();
-
-  public ArrayList<?> executeSimpleScriptFile(String engine, String host, int port, String sid,
-      String user, String password, String queryAbsoluteFilePath) throws Exception {
-    String sqlString = null;
-
-    try {
-      sqlString = new String(Files.readAllBytes(Paths.get(queryAbsoluteFilePath)));
-    } catch (Exception e) {
-      throw new Exception("sql file was not found: " + queryAbsoluteFilePath, e);
+  public static ArrayList<ArrayList<Object>> resulsetToArray(ResultSet rs) throws Exception {
+    if(rs==null) {
+      throw new Exception("Resulset is null");
     }
-    return executeSimpleScriptString(engine, host, port, sid, user, password, sqlString);
-  }
+    ResultSetMetaData metaData = rs.getMetaData();
+    int columns = metaData.getColumnCount();
 
-  public ArrayList executeSimpleScriptString(String engine, String host, int port, String sid,
-      String user, String password, String sqlString) throws Exception {
+    ArrayList<ArrayList<Object>> al = new ArrayList<ArrayList<Object>>();
 
-    Connection conn = connectionHelper.getConnection(engine, host, port, sid, user, password);
-    try {
-      ArrayList<?> result = scriptExecutor.runScript(conn, sqlString);
-      return result;
-    } catch (Exception e) {
-      throw new Exception("Failed to execute sql string: " + sqlString, e);
+    while (rs.next()) {
+      ArrayList<Object> record = new ArrayList<Object>();
+
+      for (int i = 1; i <= columns; i++) {
+        Object value = rs.getObject(i);
+        record.add(value);
+      }
+      al.add(record);
     }
+    return al;
   }
-
-
 }
