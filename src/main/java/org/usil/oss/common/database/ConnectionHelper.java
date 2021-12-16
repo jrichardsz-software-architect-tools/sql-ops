@@ -27,7 +27,6 @@ public class ConnectionHelper {
       return DriverManager.getConnection(jdbcUrlTemplate, user, password);
 
     } catch (Exception e) {
-      e.printStackTrace();
       throw new Exception("Failed to stabilish connection.", e);
     }
   }

@@ -40,7 +40,7 @@ public class DatabaseExecutorTest {
     ArrayList result = new ArrayList();
     result.add("success");
 
-    doReturn(result).when(scriptExecutor).runScript(connection, "selec * from dual;");
+    doReturn(result).when(scriptExecutor).exec("selec * from dual;", connection);
 
     ArrayList dbResponse = databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", "selec * from dual;");
@@ -59,8 +59,7 @@ public class DatabaseExecutorTest {
     ArrayList result = new ArrayList();
     result.add("adasd");
 
-    doThrow(new Exception("Im a jerk")).when(scriptExecutor).runScript(connection,
-        "selec * from dual;");
+    doThrow(new Exception("Im a jerk")).when(scriptExecutor).exec("selec * from dual;", connection);
 
     try {
       databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
@@ -85,14 +84,14 @@ public class DatabaseExecutorTest {
     Path tempFile = Files.createTempFile("databaseops-test-sql-", null);
     Files.write(tempFile, "selec * from dual;".getBytes(StandardCharsets.UTF_8));
 
-    doReturn(result).when(scriptExecutor).runScript(connection, "selec * from dual;");
+    doReturn(result).when(scriptExecutor).exec("selec * from dual;", connection);
 
     ArrayList dbResponse = databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", tempFile.toAbsolutePath().toString());
     assertEquals(1, dbResponse.size());
     assertEquals("success", dbResponse.get(0));
   }
-  
+
   @Test
   public void executeSimpleScriptFileForError() throws Exception {
 
@@ -104,8 +103,7 @@ public class DatabaseExecutorTest {
     ArrayList result = new ArrayList();
     result.add("adasd");
 
-    doThrow(new Exception("Im a jerk")).when(scriptExecutor).runScript(connection,
-        "selec * from dual;");
+    doThrow(new Exception("Im a jerk")).when(scriptExecutor).exec("selec * from dual;", connection);
 
     try {
       databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost", 2708, "sid", "jane",
@@ -114,5 +112,16 @@ public class DatabaseExecutorTest {
           "My method didn't throw when I expected it to: executeSimpleScriptString throw an error");
     } catch (Exception e) {
     }
-  }  
+  }
+
+  @Test
+  public void executeEmptyBlankScript() throws Exception {
+
+    try {
+      databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
+          "****", "");
+      fail("My method didn't throw when I expected it to: script is empty");
+    } catch (Exception e) {
+    }
+  }
 }

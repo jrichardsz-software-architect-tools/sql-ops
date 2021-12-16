@@ -1,6 +1,9 @@
-# dbvops
+# database-ops
 
-Do you want to automatize your sql scripts execution as you do with your source code?
+Simple tool to execute any script sql.
+
+![](./coverage.png)
+![](./branch.png)
 
 # Requirements
 
