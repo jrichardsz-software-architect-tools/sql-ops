@@ -51,6 +51,36 @@ public class ScriptExecutorTest {
     ArrayList<ArrayList<Object>> scriptResponse2 = scriptExecutor.exec(sqlString, connection);
     assertEquals(0, scriptResponse2.size());
   }
+  
+  @Test
+  public void severalDmlScriptWithResultWithoutAnyError() throws Exception {
+
+    String basePath = new File("").getAbsolutePath();
+    String sqlFilePath = basePath + File.separator
+        + "src/test/resources/org/usil/oss/common/database/ScriptExecutorTest/multiple.sql";
+    String sqlString = new String(Files.readAllBytes(Paths.get(sqlFilePath)));
+
+    PreparedStatement statement = mock(PreparedStatement.class);
+    Connection connection = mock(Connection.class);
+
+    when(connection.prepareStatement(any(String.class))).thenReturn(statement);
+    doNothing().when(connection).commit();
+
+    when(statement.execute()).thenReturn(true);
+
+    ResultSet mockResultSet =
+        MockResultSet.create(new String[] {"status"}, new String[][] {{"success"}});
+    when(statement.getResultSet()).thenReturn(mockResultSet);
+
+    ScriptExecutor scriptExecutor = new ScriptExecutor();
+
+    // hasResult and resultset != null
+    ArrayList<ArrayList<Object>> scriptResponse = scriptExecutor.exec(sqlString, connection);
+    //System.out.println(scriptResponse);
+    assertEquals(1, scriptResponse.size());
+    assertEquals(1, scriptResponse.get(0).size());
+    assertEquals("success", scriptResponse.get(0).get(0));
+  }  
 
   @Test
   public void singleAndSimpleDDLScriptWithoutResultAndAnyError() throws Exception {

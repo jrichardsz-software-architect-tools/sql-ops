@@ -16,13 +16,14 @@ import org.usil.oss.common.file.FileHelper;
 import org.usil.oss.common.logger.LoggerHelper;
 import org.usil.oss.common.model.ExecutionMetadata;
 
-public class DbvopsCmdEntrypoint {
+public class DatabaseOps {
 
-  private final Logger logger = LogManager.getLogger(DbvopsCmdEntrypoint.class);
+  private final Logger logger = LogManager.getLogger(DatabaseOps.class);
 
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
   public ExecutionMetadata perform(String[] args) throws Exception {
+    System.out.println(args);
     ArgumentsHelper argumentsHelper = new ArgumentsHelper();
     CommandLine commandLine = argumentsHelper.getArguments(args);
 

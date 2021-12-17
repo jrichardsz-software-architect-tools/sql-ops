@@ -22,13 +22,15 @@ public class ScriptExecutor {
 
     ArrayList<ArrayList<Object>> results = new ArrayList<ArrayList<Object>>();
     // get the statements
-    List<SQLStatement> statements = getStatements(sql, conn);
+    List<SqlStatement> statements = getStatements(sql, conn);
 
     // execute them in the order
-    for (SQLStatement stmt : statements) {
+    for (SqlStatement stmt : statements) {
       ArrayList<ArrayList<Object>> result = stmt.exec();
       if (result != null) {
+        System.out.println(result);
         results.addAll(result);
+        System.out.println(results);
       }
     }
 
@@ -43,9 +45,9 @@ public class ScriptExecutor {
    * @throws UnsupportedEncodingException
    * @throws IOException
    */
-  private List<SQLStatement> getStatements(String sql, Connection conn) {
+  private List<SqlStatement> getStatements(String sql, Connection conn) {
 
-    List<SQLStatement> statements = new ArrayList<>();
+    List<SqlStatement> statements = new ArrayList<>();
     StringTokenizer st = new StringTokenizer(sql, ";");
 
     while (st.hasMoreTokens()) {
@@ -54,7 +56,7 @@ public class ScriptExecutor {
       if (StringUtils.isEmptyOrWhitespaceOnly(query)) {
         continue;
       }
-      statements.add(new SQLStatement(conn, query));
+      statements.add(new SqlStatement(conn, query));
     }
 
     return statements;

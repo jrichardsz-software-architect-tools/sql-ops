@@ -13,16 +13,16 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.usil.oss.common.database.DatabaseExecutor;
 import org.usil.oss.common.model.ExecutionMetadata;
-import org.usil.oss.devops.databaseops.DbvopsCmdEntrypoint;
+import org.usil.oss.devops.databaseops.DatabaseOps;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DbvopsCmdEntrypointTest {
+public class DatabaseOpsTest {
 
   @Mock
   private DatabaseExecutor databaseHelper;
 
   @InjectMocks
-  private DbvopsCmdEntrypoint cmdEntrypoint;
+  private DatabaseOps cmdEntrypoint;
 
   @Test
   public void successExecutionWithoutErrorCheckAndWithoutErrors() throws Exception {
