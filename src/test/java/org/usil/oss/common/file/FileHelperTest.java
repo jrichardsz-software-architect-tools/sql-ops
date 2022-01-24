@@ -1,6 +1,7 @@
 package org.usil.oss.common.file;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import java.io.File;
 import java.nio.file.Files;
@@ -43,7 +44,7 @@ public class FileHelperTest {
     try {
       FileHelper.readFilesAtRoot(null, ".sql$");
     } catch (Exception e) {
-      assertEquals("root dir is null", e.getMessage());
+      assertNotNull("This error is expected", e);
     }
   }
 
@@ -57,6 +58,15 @@ public class FileHelperTest {
 
     ArrayList<String> files = FileHelper.readFilesAtRoot(new File(emptyFolder), ".sql$");
     assertEquals(0, files.size());
+  }
+
+  @Test
+  public void readFilesWhenPathIsWrong() throws Exception {
+    try {
+      FileHelper.readFilesAtRoot(new File("/foo/bar"), ".sql$");
+    } catch (Exception e) {
+      assertNotNull("This error is expected", e);
+    }
   }
 
   @Test
@@ -114,5 +124,4 @@ public class FileHelperTest {
         "org/usil/oss/common/file/FileHelperTest.getFileAsStringFromClasspath/classpathfile.txt");
     assertEquals("javadabadoo", simpleClassPathFileContent);
   }
-
 }

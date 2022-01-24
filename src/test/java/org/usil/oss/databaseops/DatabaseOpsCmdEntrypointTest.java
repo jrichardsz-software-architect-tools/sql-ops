@@ -18,9 +18,14 @@ public class DatabaseOpsCmdEntrypointTest {
 
     DatabaseOps databaseOps = Mockito.mock(DatabaseOps.class);
     Mockito.doReturn(null).when(databaseOps).perform(new String[] {"p1"});
-
+    // danger: changing databaseOps in DatabaseOpsCmdEntrypoint
     setStatic(DatabaseOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), databaseOps);
     DatabaseOpsCmdEntrypoint.main(new String[] {"p1"});
+    // restoring databaseOps in DatabaseOpsCmdEntrypoint
+    setStatic(DatabaseOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), new DatabaseOps());
+    // TODO: if I'm not restoring, another tests like SqliteTest which uses DatabaseOpsCmdEntrypoint
+    // is invoking the mock databaseOps, not the real
+    // https://stackoverflow.com/a/34921820/3957754
   }
 
   // https://newbedev.com/mock-private-static-final-field-using-mockito-or-jmockit

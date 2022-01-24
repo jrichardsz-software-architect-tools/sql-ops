@@ -28,9 +28,7 @@ public class ScriptExecutor {
     for (SqlStatement stmt : statements) {
       ArrayList<ArrayList<Object>> result = stmt.exec();
       if (result != null) {
-        System.out.println(result);
         results.addAll(result);
-        System.out.println(results);
       }
     }
 

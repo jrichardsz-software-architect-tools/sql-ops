@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.core.util.IOUtils;
@@ -37,13 +35,13 @@ public class FileHelper {
     InputStream classPathFileStream = classLoader.getResourceAsStream(file);
     return IOUtils.toString(new InputStreamReader(classPathFileStream));
   }
-
+  
   public static ArrayList<String> readFilesAtRoot(File dir, String filterRegexString)
       throws Exception {
 
     ArrayList<String> fileTree = new ArrayList<String>();
-    if (dir == null) {
-      throw new Exception("root dir is null");
+    if (dir == null || dir.listFiles() == null) {
+      throw new Exception("root dir is null or empty");
     }
 
     if (dir.listFiles().length == 0) {

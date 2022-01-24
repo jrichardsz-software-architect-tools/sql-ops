@@ -2,6 +2,7 @@ package org.usil.oss.common.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
@@ -51,7 +52,7 @@ public class ScriptExecutorTest {
     ArrayList<ArrayList<Object>> scriptResponse2 = scriptExecutor.exec(sqlString, connection);
     assertEquals(0, scriptResponse2.size());
   }
-  
+
   @Test
   public void severalDmlScriptWithResultWithoutAnyError() throws Exception {
 
@@ -63,43 +64,52 @@ public class ScriptExecutorTest {
     PreparedStatement statement = mock(PreparedStatement.class);
     Connection connection = mock(Connection.class);
 
-    when(connection.prepareStatement(any(String.class))).thenReturn(statement);
+    doReturn(statement).when(connection).prepareStatement(any(String.class));
+
     doNothing().when(connection).commit();
 
     when(statement.execute()).thenReturn(true);
 
-    ResultSet mockResultSet =
-        MockResultSet.create(new String[] {"status"}, new String[][] {{"success"}});
-    when(statement.getResultSet()).thenReturn(mockResultSet);
+    ResultSet mockResultSet1 =
+        MockResultSet.create(new String[] {"status"}, new String[][] {{"success1"}});
+    ResultSet mockResultSet2 =
+        MockResultSet.create(new String[] {"status"}, new String[][] {{"success2"}});
+    ResultSet mockResultSet3 =
+        MockResultSet.create(new String[] {"status"}, new String[][] {{"success3"}});
+    when(statement.getResultSet()).thenReturn(mockResultSet1).thenReturn(mockResultSet2)
+        .thenReturn(mockResultSet3);
 
     ScriptExecutor scriptExecutor = new ScriptExecutor();
 
     // hasResult and resultset != null
     ArrayList<ArrayList<Object>> scriptResponse = scriptExecutor.exec(sqlString, connection);
-    //System.out.println(scriptResponse);
-    assertEquals(1, scriptResponse.size());
+    assertEquals(3, scriptResponse.size());
     assertEquals(1, scriptResponse.get(0).size());
-    assertEquals("success", scriptResponse.get(0).get(0));
-  }  
+    assertEquals(1, scriptResponse.get(1).size());
+    assertEquals(1, scriptResponse.get(2).size());
+    assertEquals("success1", scriptResponse.get(0).get(0));
+    assertEquals("success2", scriptResponse.get(1).get(0));
+    assertEquals("success3", scriptResponse.get(2).get(0));
+  }
 
   @Test
   public void singleAndSimpleDDLScriptWithoutResultAndAnyError() throws Exception {
-    
+
     String basePath = new File("").getAbsolutePath();
     String sqlFilePath = basePath + File.separator
         + "src/test/resources/org/usil/oss/common/database/ScriptExecutorTest/simple.sql";
     String sqlString = new String(Files.readAllBytes(Paths.get(sqlFilePath)));
-    
+
     PreparedStatement statement = mock(PreparedStatement.class);
     Connection connection = mock(Connection.class);
-    
+
     when(connection.getAutoCommit()).thenReturn(true);
     when(connection.prepareStatement(sqlString.split(";")[0])).thenReturn(statement);
     doNothing().when(connection).commit();
-    
+
     when(statement.execute()).thenReturn(false);
     when(statement.getResultSet()).thenReturn(null);
-    
+
     ScriptExecutor scriptExecutor = new ScriptExecutor();
     ArrayList<ArrayList<Object>> scriptResponse = scriptExecutor.exec(sqlString, connection);
     assertEquals(0, scriptResponse.size());

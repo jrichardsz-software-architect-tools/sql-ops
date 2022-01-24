@@ -23,7 +23,6 @@ public class DatabaseOps {
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
   public ExecutionMetadata perform(String[] args) throws Exception {
-    System.out.println(args);
     ArgumentsHelper argumentsHelper = new ArgumentsHelper();
     CommandLine commandLine = argumentsHelper.getArguments(args);
 
@@ -143,6 +142,6 @@ public class DatabaseOps {
     params.put("database_password", commandLine.getOptionValue("database_password"));
     return params;
   }
-  
-  
+
+
 }

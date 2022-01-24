@@ -1,0 +1,1 @@
+create view view_1 as SELECT date('now');

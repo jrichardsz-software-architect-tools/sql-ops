@@ -176,7 +176,7 @@ public class DatabaseOpsTest {
 
 
   @Test
-  public void errorOnFirstScriptWithErrorCheckAndNoErrors() throws Exception {
+  public void errorOnFirstScriptWithErrorCheckAndNoErrorsWithVerboseLog() throws Exception {
     String engine = "dummy1";
     String host = "192.168.0.17";
     int port = 3306;
@@ -280,58 +280,6 @@ public class DatabaseOpsTest {
     String sid = "deleteme";
     String user = "root";
     String password = "secret";
-    
-    ArrayList<String> result = new ArrayList<String>();
-    result.add("success");
-    
-    doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
-        + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
-    
-    doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
-        + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
-    
-    doThrow(new Exception("Im a jerk")).when(databaseHelper).executeSimpleScriptFile(engine, host,
-        port, sid, user, password, new File("").getAbsolutePath()
-        + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
-    
-    String basePath = new File("").getAbsolutePath();
-    String scriptsFolder = basePath + File.separator
-        + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
-    
-    String cmdArguments = String.format(
-        "--database_host=%s --database_port=%s "
-            + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-            host, port, sid, user, password, scriptsFolder, engine);
-    
-    cmdArguments = cmdArguments.replace("@scriptsFolder", scriptsFolder);
-    String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
-    
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(2, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(2, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(2, executionMetadata.getSuccessOutputs().size());
-    assertEquals(2, executionMetadata.getErrorOutputs().size());
-    
-    assertEquals(true,
-        executionMetadata.getExecutedRollbackScripts().get(0).endsWith("002.sql.rollback"));
-    assertEquals(true,
-        executionMetadata.getExecutedRollbackScripts().get(1).endsWith("001.sql.rollback"));
-  }
-  @Test
-  public void errorOnLastScriptWithErrorCheckAndNoErrorsAndVerboseLog() throws Exception {
-    String engine = "dummy1";
-    String host = "192.168.0.17";
-    int port = 3306;
-    String sid = "deleteme";
-    String user = "root";
-    String password = "secret";
 
     ArrayList<String> result = new ArrayList<String>();
     result.add("success");
@@ -355,7 +303,7 @@ public class DatabaseOpsTest {
     String cmdArguments = String.format(
         "--database_host=%s --database_port=%s "
             + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s --verbose_log",
+            + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
 
     cmdArguments = cmdArguments.replace("@scriptsFolder", scriptsFolder);
