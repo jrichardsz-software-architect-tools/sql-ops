@@ -8,6 +8,7 @@ Simple tool to execute any script sql.
 # Requirements
 
 - java >=8
+- some database for tests. Supported engines: oracle, mysql
 
 # Usage
 
@@ -17,7 +18,7 @@ Simple tool to execute any script sql.
 - Run
 
 ```
-java -Duser.timezone=GMT -jar /foo/dbvops.jar \
+java -Duser.timezone=GMT -jar /foo/database-ops.jar \
 --database_host=$database_host \
 --database_port=$database_port \
 --database_name=$database_name \
@@ -27,8 +28,41 @@ java -Duser.timezone=GMT -jar /foo/dbvops.jar \
 --engine=mysql
 ```
 
-# build
+# Build
 
 ```
-mvn clean package -DskipTests=true -Dcobertura.skip=true
+mvn clean package
 ```
+
+# Parameters
+
+|parameter|sample value|description|
+| --- | --- | --- |
+|database_host|10.100.15.26|database host|
+|database_port|3306|database port. 1521 for oracle|
+|database_name|value|database name|
+|database_user|value|database user|
+|database_password|value|database password|
+|scripts_folder|value|/foo/bar/scripts|
+|engine|oracle|database engine. Supported values: oracle,mysql,sqlite|
+|--verbose_log||enable a lot of log|
+
+# Roadmap
+
+- [ ] Solve compiler warnings
+- [ ] Fix https://github.com/mockito/mockito-cglib/issues/1
+- [ ] Publish to mvn repository
+
+
+# Contributors
+
+<table>
+  <tbody>
+    <td>
+      <img src="https://avatars0.githubusercontent.com/u/3322836?s=460&v=4" width="100px;"/>
+      <br />
+      <label><a href="http://jrichardsz.github.io/">JRichardsz</a></label>
+      <br />
+    </td>    
+  </tbody>
+</table>

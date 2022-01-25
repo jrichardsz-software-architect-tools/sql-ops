@@ -1,5 +1,6 @@
 package org.usil.oss.common.file;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.core.util.IOUtils;
 
 public class FileHelper {
 
@@ -16,8 +16,9 @@ public class FileHelper {
       String expectedExtension) throws Exception {
     if (mainFiles.size() != otherFiles.size()) {
       throw new Exception(String.format(
-          "The number of files does not match: # scripts-count=%s rollbacks_count=%s.",
+          "The number of files does not match: scripts number is %s but rollbacks number is %s.",
           mainFiles.size(), otherFiles.size())
+          + "Scripts and rollbacks number should be the same. Example:"
           + " If you have 3 .sql files, 3 .rollback files are required.");
     }
 
@@ -33,9 +34,17 @@ public class FileHelper {
   public static String getFileAsStringFromClasspath(String file) throws IOException {
     ClassLoader classLoader = FileHelper.class.getClassLoader();
     InputStream classPathFileStream = classLoader.getResourceAsStream(file);
-    return IOUtils.toString(new InputStreamReader(classPathFileStream));
+    InputStreamReader isReader = new InputStreamReader(classPathFileStream);
+    // Creating a BufferedReader object
+    BufferedReader reader = new BufferedReader(isReader);
+    StringBuffer sb = new StringBuffer();
+    String str;
+    while ((str = reader.readLine()) != null) {
+      sb.append(str);
+    }
+    return sb.toString();
   }
-  
+
   public static ArrayList<String> readFilesAtRoot(File dir, String filterRegexString)
       throws Exception {
 

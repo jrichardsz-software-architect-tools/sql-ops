@@ -9,7 +9,7 @@ public class ExecutionMetadata {
   private ArrayList<?> beforeErrors;
   private ArrayList<?> afterErrors;
   private ArrayList<ArrayList<?>> successOutputs;
-  private ArrayList<ArrayList<?>> errorOutputs;
+  private ArrayList<String> errorOutputs;
   private ArrayList<String> executedQueryScripts;
   private ArrayList<String> executedRollbackScripts;
 
@@ -53,11 +53,11 @@ public class ExecutionMetadata {
     this.successOutputs = successOutputs;
   }
 
-  public ArrayList<ArrayList<?>> getErrorOutputs() {
+  public ArrayList<String> getErrorOutputs() {
     return errorOutputs;
   }
 
-  public void setErrorOutputs(ArrayList<ArrayList<?>> errorOutputs) {
+  public void setErrorOutputs(ArrayList<String> errorOutputs) {
     this.errorOutputs = errorOutputs;
   }
 

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import org.apache.commons.cli.CommandLine;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.usil.oss.common.ascii.TableAscciHelper;
 import org.usil.oss.common.cli.ArgumentsHelper;
 import org.usil.oss.common.database.DatabaseExecutor;
@@ -18,7 +18,7 @@ import org.usil.oss.common.model.ExecutionMetadata;
 
 public class DatabaseOps {
 
-  private final Logger logger = LogManager.getLogger(DatabaseOps.class);
+  private static final Logger logger = LoggerFactory.getLogger(DatabaseOps.class);
 
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
@@ -37,17 +37,21 @@ public class DatabaseOps {
     String scriptsFolder = commandLine.getOptionValue("scripts_folder");
     String engine = commandLine.getOptionValue("engine");
 
+    LoggerHelper.initialize();
+
     if (commandLine.hasOption("verbose_log")) {
       LoggerHelper.setDebugLevel();
     }
 
+    logger.info("Starting database operations...");
+
     ArrayList<String> queries = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".sql$");
     logger.info("scripts");
-    logger.info(queries);
+    logger.info(queries.toString());
 
     ArrayList<String> rollbacks = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".rollback$");
     logger.info("rollbacks");
-    logger.info(rollbacks);
+    logger.info(rollbacks.toString());
 
     FileHelper.detectRequiredPairs(queries, rollbacks, ".rollback");
 
@@ -55,7 +59,7 @@ public class DatabaseOps {
     ArrayList<?> beforeErrors = new ArrayList<>();
 
     ArrayList<ArrayList<?>> successOutputs = new ArrayList<>();
-    ArrayList<ArrayList<?>> errorOutputs = new ArrayList<>();
+    ArrayList<String> errorOutputs = new ArrayList<>();
     ArrayList<?> afterErrors = new ArrayList<>();
 
     if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
@@ -109,12 +113,23 @@ public class DatabaseOps {
         Collections.reverse(executedQueries);
 
         for (String executedScript : executedQueries) {
-          ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port,
-              name, user, password, executedScript + ".rollback");
-          logger.info(String.format("rollback: %s , status: success",
-              currentScript.replace(scriptsFolder, "")));
-          errorOutputs.add(scriptOutput);
-          executedRollbacks.add(executedScript + ".rollback");
+          ArrayList<?> scriptOutput = null;          
+          String rollbackFileLocation = executedScript + ".rollback";
+          String singleRollbackScriptName = rollbackFileLocation.replaceAll(scriptsFolder, "");
+          try {
+            scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port, name, user,
+                password, rollbackFileLocation);
+            errorOutputs.add(singleRollbackScriptName + " : " + scriptOutput);
+            executedRollbacks.add(executedScript + ".rollback");
+            logger.error(String.format("rollback: %s , status: success", singleRollbackScriptName));
+          } catch (Exception ex) {
+            logger.error("If a rollback fails, God, what more do you want from me?");
+            logger.error(String.format("rollback: %s , status: error", singleRollbackScriptName));
+            errorOutputs.add(singleRollbackScriptName + " : " + ex.getCause());
+            logger.error("By default on rollback error, the entire execution ends.");
+            break;
+          }
+
         }
       }
     }
