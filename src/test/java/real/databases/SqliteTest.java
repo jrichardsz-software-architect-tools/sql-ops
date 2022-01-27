@@ -190,7 +190,7 @@ public class SqliteTest {
     int objectsCountBefore = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
 
-    databaseOps.perform(tablesArgs);
+    ExecutionMetadata executionMetadata = databaseOps.perform(tablesArgs);
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
@@ -199,6 +199,13 @@ public class SqliteTest {
         "thanks to rollbacks, the database objects count should be the same as before execution",
         objectsCountBefore, objectsCountAfter);
 
+    // assert error details
+    assertEquals("status should be error", "error", executionMetadata.getStatus());
+    assertEquals("should be just one error", 1, executionMetadata.getErrorOutputs().size());
+    assertTrue("response should contain error cause or reason",
+        executionMetadata.getErrorOutputs().get(0).contains("[SQLITE_ERROR] SQL error"));
+
+    // validating rollbacks
     // tables should not exist
     // I'm use PRAGMA to get details from table : https://stackoverflow.com/a/7679086/3957754
     int table1Existence = SQLiteJdbc.exec("PRAGMA table_info(table_1);", sqliteDbFilePath).size();

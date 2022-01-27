@@ -22,7 +22,49 @@ public class DatabaseOpsTest {
   private DatabaseExecutor databaseHelper;
 
   @InjectMocks
-  private DatabaseOps cmdEntrypoint;
+  private DatabaseOps databaseOps;
+
+  @Test
+  public void successExecutionWithoutErrorCheckAndWithoutErrorsUsingParams() throws Exception {
+    String engine = "dummy2";
+    String host = "192.168.0.17";
+    int port = 3306;
+    String sid = "deleteme";
+    String user = "root";
+    String password = "secret";
+
+    ArrayList<String> result = new ArrayList<String>();
+    result.add("success");
+
+    doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
+        password, new File("").getAbsolutePath()
+            + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
+
+    doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
+        password, new File("").getAbsolutePath()
+            + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
+
+    doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
+        password, new File("").getAbsolutePath()
+            + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
+
+    String basePath = new File("").getAbsolutePath();
+    String scriptsFolder = basePath + File.separator
+        + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
+
+    ExecutionMetadata executionMetadata =
+        databaseOps.perform(host, port, sid, user, password, scriptsFolder, engine, false);
+
+    assertEquals(0, executionMetadata.getAfterErrors().size());
+    assertEquals(0, executionMetadata.getBeforeErrors().size());
+    assertEquals(3, executionMetadata.getQueryScripts().size());
+    assertEquals(3, executionMetadata.getRollbackScripts().size());
+    assertEquals(3, executionMetadata.getExecutedQueryScripts().size());
+    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
+    assertEquals(3, executionMetadata.getSuccessOutputs().size());
+    assertEquals(0, executionMetadata.getErrorOutputs().size());
+
+  }
 
   @Test
   public void successExecutionWithoutErrorCheckAndWithoutErrors() throws Exception {
@@ -58,7 +100,7 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getAfterErrors().size());
     assertEquals(0, executionMetadata.getBeforeErrors().size());
@@ -105,7 +147,7 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getAfterErrors().size());
     assertEquals(0, executionMetadata.getBeforeErrors().size());
@@ -160,7 +202,7 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getBeforeErrors().size());
     assertEquals(2, executionMetadata.getAfterErrors().size());
@@ -209,7 +251,7 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s --verbose_log",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getAfterErrors().size());
     assertEquals(0, executionMetadata.getBeforeErrors().size());
@@ -218,7 +260,7 @@ public class DatabaseOpsTest {
     assertEquals(0, executionMetadata.getExecutedQueryScripts().size());
     assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
     assertEquals(0, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getErrorOutputs().size());
+    assertEquals(1, executionMetadata.getErrorOutputs().size());
 
   }
 
@@ -257,7 +299,7 @@ public class DatabaseOpsTest {
         host, port, sid, user, password, scriptsFolder, engine);
 
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getAfterErrors().size());
     assertEquals(0, executionMetadata.getBeforeErrors().size());
@@ -308,7 +350,7 @@ public class DatabaseOpsTest {
 
     cmdArguments = cmdArguments.replace("@scriptsFolder", scriptsFolder);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = cmdEntrypoint.perform(args);
+    ExecutionMetadata executionMetadata = databaseOps.perform(args);
 
     assertEquals(0, executionMetadata.getAfterErrors().size());
     assertEquals(0, executionMetadata.getBeforeErrors().size());
@@ -317,7 +359,8 @@ public class DatabaseOpsTest {
     assertEquals(2, executionMetadata.getExecutedQueryScripts().size());
     assertEquals(2, executionMetadata.getExecutedRollbackScripts().size());
     assertEquals(2, executionMetadata.getSuccessOutputs().size());
-    assertEquals(2, executionMetadata.getErrorOutputs().size());
+    assertEquals(1, executionMetadata.getErrorOutputs().size());
+    assertEquals(2, executionMetadata.getRollbackSuccessOutputs().size());
 
     assertEquals(true,
         executionMetadata.getExecutedRollbackScripts().get(0).endsWith("002.sql.rollback"));

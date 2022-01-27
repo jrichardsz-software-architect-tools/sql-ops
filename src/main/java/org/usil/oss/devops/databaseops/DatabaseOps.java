@@ -22,24 +22,12 @@ public class DatabaseOps {
 
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
-  public ExecutionMetadata perform(String[] args) throws Exception {
-    ArgumentsHelper argumentsHelper = new ArgumentsHelper();
-    CommandLine commandLine = argumentsHelper.getArguments(args);
-
-    HashMap<String, String> databaseParams = getDatabaseParametersFromCli(commandLine);
-
-    String host = databaseParams.get("database_host");
-    int port = Integer.parseInt(databaseParams.get("database_port"));
-    String name = databaseParams.get("database_name");
-    String user = databaseParams.get("database_user");
-    String password = databaseParams.get("database_password");
-
-    String scriptsFolder = commandLine.getOptionValue("scripts_folder");
-    String engine = commandLine.getOptionValue("engine");
-
+  public ExecutionMetadata perform(String databaseHost, int databasePort, String databaseName,
+      String databaseUser, String databasePassword, String scriptsFolder, String engine,
+      boolean verboseLog) throws Exception {
     LoggerHelper.initialize();
 
-    if (commandLine.hasOption("verbose_log")) {
+    if (verboseLog) {
       LoggerHelper.setDebugLevel();
     }
 
@@ -66,40 +54,47 @@ public class DatabaseOps {
       sqlShowErrors = FileHelper.getFileAsStringFromClasspath(
           ClassPathProperties.getProperty(engine + ".errorQueryFile"));
 
-      beforeErrors = databaseHelper.executeSimpleScriptString(engine, host, port, name, user,
-          password, sqlShowErrors);
+      beforeErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
+          databaseName, databaseUser, databasePassword, sqlShowErrors);
 
       logger.info("Database errors before the scripts execution: " + beforeErrors.size());
       logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
     }
 
+    ExecutionMetadata executionMetadata = new ExecutionMetadata();
+    
     ArrayList<String> executedQueries = new ArrayList<String>();
     ArrayList<String> executedRollbacks = new ArrayList<String>();
+    ArrayList<String> rollbackSuccessOutputs = new ArrayList<String>();
+    ArrayList<String> rollbackErrorOutputs = new ArrayList<String>();
     String currentScript = null;
+    String currentScriptSingleName = null;
     try {
       for (String scriptPath : queries) {
         currentScript = scriptPath;
+        currentScriptSingleName = currentScript.replaceAll(scriptsFolder, "");
 
-        ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port, name,
-            user, password, currentScript);
-        logger.info(String.format("script: %s , status: success",
-            currentScript.replace(scriptsFolder, "")));
+        ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, databaseHost,
+            databasePort, databaseName, databaseUser, databasePassword, currentScript);
+        logger.info(String.format("script: %s , status: success", currentScriptSingleName));
         executedQueries.add(currentScript);
         successOutputs.add(scriptOutput);
       }
+      executionMetadata.setStatus("success");
       if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
         // detect if errors increased
-        afterErrors = databaseHelper.executeSimpleScriptString(engine, host, port, name, user,
-            password, sqlShowErrors);
+        afterErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
+            databaseName, databaseUser, databasePassword, sqlShowErrors);
         if (afterErrors.size() > beforeErrors.size()) {
           logger.info("scripts could caused new errors.");
           logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
         }
       }
     } catch (Exception e) {
-      String errorMessage =
-          String.format("script: %s , status: error", currentScript.replace(scriptsFolder, ""));
-      if (commandLine.hasOption("verbose_log")) {
+      executionMetadata.setStatus("error");
+      String errorMessage = String.format("script: %s , status: error", currentScriptSingleName);
+      errorOutputs.add(currentScriptSingleName + " : " + e.getCause());
+      if (verboseLog) {
         logger.error(errorMessage, e);
       } else {
         logger.error(errorMessage);
@@ -113,19 +108,19 @@ public class DatabaseOps {
         Collections.reverse(executedQueries);
 
         for (String executedScript : executedQueries) {
-          ArrayList<?> scriptOutput = null;          
+          ArrayList<?> scriptOutput = null;
           String rollbackFileLocation = executedScript + ".rollback";
           String singleRollbackScriptName = rollbackFileLocation.replaceAll(scriptsFolder, "");
           try {
-            scriptOutput = databaseHelper.executeSimpleScriptFile(engine, host, port, name, user,
-                password, rollbackFileLocation);
-            errorOutputs.add(singleRollbackScriptName + " : " + scriptOutput);
+            scriptOutput = databaseHelper.executeSimpleScriptFile(engine, databaseHost,
+                databasePort, databaseName, databaseUser, databasePassword, rollbackFileLocation);
+            rollbackSuccessOutputs.add(singleRollbackScriptName + " : " + scriptOutput);
             executedRollbacks.add(executedScript + ".rollback");
             logger.error(String.format("rollback: %s , status: success", singleRollbackScriptName));
           } catch (Exception ex) {
             logger.error("If a rollback fails, God, what more do you want from me?");
             logger.error(String.format("rollback: %s , status: error", singleRollbackScriptName));
-            errorOutputs.add(singleRollbackScriptName + " : " + ex.getCause());
+            rollbackErrorOutputs.add(singleRollbackScriptName + " : " + ex.getCause());
             logger.error("By default on rollback error, the entire execution ends.");
             break;
           }
@@ -136,7 +131,7 @@ public class DatabaseOps {
 
     logger.info("By JRichardsz");
 
-    ExecutionMetadata executionMetadata = new ExecutionMetadata();
+    
     executionMetadata.setAfterErrors(afterErrors);
     executionMetadata.setBeforeErrors(beforeErrors);
     executionMetadata.setQueryScripts(queries);
@@ -145,18 +140,25 @@ public class DatabaseOps {
     executionMetadata.setExecutedRollbackScripts(executedRollbacks);
     executionMetadata.setSuccessOutputs(successOutputs);
     executionMetadata.setErrorOutputs(errorOutputs);
+    executionMetadata.setRollbackErrorOutputs(rollbackSuccessOutputs);
+    executionMetadata.setRollbackSuccessOutputs(rollbackSuccessOutputs);
     return executionMetadata;
   }
 
-  private HashMap<String, String> getDatabaseParametersFromCli(CommandLine commandLine) {
-    HashMap<String, String> params = new HashMap<String, String>();
-    params.put("database_host", commandLine.getOptionValue("database_host"));
-    params.put("database_port", commandLine.getOptionValue("database_port"));
-    params.put("database_name", commandLine.getOptionValue("database_name"));
-    params.put("database_user", commandLine.getOptionValue("database_user"));
-    params.put("database_password", commandLine.getOptionValue("database_password"));
-    return params;
+  public ExecutionMetadata perform(String[] args) throws Exception {
+    ArgumentsHelper argumentsHelper = new ArgumentsHelper();
+    CommandLine commandLine = argumentsHelper.getArguments(args);
+
+    String databaseHost = commandLine.getOptionValue("database_host");
+    int databasePort = Integer.parseInt(commandLine.getOptionValue("database_port"));
+    String databaseName = commandLine.getOptionValue("database_name");
+    String databaseUser = commandLine.getOptionValue("database_user");
+    String databasePassword = commandLine.getOptionValue("database_password");
+
+    String scriptsFolder = commandLine.getOptionValue("scripts_folder");
+    String engine = commandLine.getOptionValue("engine");
+    boolean verboseLog = commandLine.hasOption("verbose_log");
+    return perform(databaseHost, databasePort, databaseName, databaseUser, databasePassword,
+        scriptsFolder, engine, verboseLog);
   }
-
-
 }
