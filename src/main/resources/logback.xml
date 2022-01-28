@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<configuration>
+<configuration debug="true" >
+
+<!--     <contextListener class="org.usil.oss.common.logger.LoggerStartupListener"/> -->
 
 	<appender name="STDOUT"
 		class="ch.qos.logback.core.ConsoleAppender">
@@ -12,7 +14,8 @@
 	</appender>
 
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>${log.folder}/${log.name}.log</file>
+		<file>${log_path}</file>
+		<!-- <file>${log.folder}/${log.name}.log</file> -->
 		<append>true</append>
 		<immediateFlush>true</immediateFlush>
 		<encoder>

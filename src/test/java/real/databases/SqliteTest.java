@@ -8,15 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.usil.oss.common.model.ExecutionMetadata;
 import org.usil.oss.devops.databaseops.DatabaseOps;
 import org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint;
 
 public class SqliteTest {
-
-  private static final Logger logger = LoggerFactory.getLogger(SqliteTest.class);
 
   public String getDatabaseFileLocation() throws Exception {
     String basePath = new File("").getAbsolutePath();
@@ -194,6 +190,8 @@ public class SqliteTest {
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
+    
+    assertNotNull("Should exist a log file for error revision.", executionMetadata.getLogPath());
 
     assertEquals(
         "thanks to rollbacks, the database objects count should be the same as before execution",
@@ -219,8 +217,7 @@ public class SqliteTest {
   public void tablesShouldExistIfRollbackFails() throws Exception {
     String basePath = new File("").getAbsolutePath();
 
-    String sqliteDbFilePath = getDatabaseFileLocation();
-    System.out.println(sqliteDbFilePath);
+    String sqliteDbFilePath = getDatabaseFileLocation();    
     String engine = "sqlite";
     String host = "";
     int port = 0;

@@ -1,6 +1,7 @@
 package org.usil.oss.databaseops;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import java.io.File;
@@ -260,7 +261,12 @@ public class DatabaseOpsTest {
     assertEquals(0, executionMetadata.getExecutedQueryScripts().size());
     assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
     assertEquals(0, executionMetadata.getSuccessOutputs().size());
+    assertEquals(0, executionMetadata.getRollbackErrorOutputs().size());
     assertEquals(1, executionMetadata.getErrorOutputs().size());
+
+    // tostring assert
+    assertNotNull("ExecutionMetadata tostring should be not null to show error info",
+        executionMetadata.toString());
 
   }
 

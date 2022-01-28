@@ -15,6 +15,7 @@ public class ExecutionMetadata {
   private ArrayList<String> rollbackSuccessOutputs;
   private ArrayList<String> rollbackErrorOutputs;
   private String status = null;
+  private String logPath = null;
 
   public ArrayList<String> getQueryScripts() {
     return queryScripts;
@@ -104,6 +105,14 @@ public class ExecutionMetadata {
     this.status = status;
   }
 
+  public String getLogPath() {
+    return logPath;
+  }
+
+  public void setLogPath(String logPath) {
+    this.logPath = logPath;
+  }
+
   @Override
   public String toString() {
     return "ExecutionMetadata [queryScripts=" + queryScripts + ", rollbackScripts="
@@ -111,8 +120,7 @@ public class ExecutionMetadata {
         + ", successOutputs=" + successOutputs + ", errorOutputs=" + errorOutputs
         + ", executedQueryScripts=" + executedQueryScripts + ", executedRollbackScripts="
         + executedRollbackScripts + ", rollbackSuccessOutputs=" + rollbackSuccessOutputs
-        + ", rollbackErrorOutputs=" + rollbackErrorOutputs + ", status=" + status + "]";
+        + ", rollbackErrorOutputs=" + rollbackErrorOutputs + ", status=" + status + ", logPath="
+        + logPath + "]";
   }
-
-
 }

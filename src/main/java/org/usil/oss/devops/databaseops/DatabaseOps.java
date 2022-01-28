@@ -3,7 +3,6 @@ package org.usil.oss.devops.databaseops;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,9 @@ public class DatabaseOps {
   public ExecutionMetadata perform(String databaseHost, int databasePort, String databaseName,
       String databaseUser, String databasePassword, String scriptsFolder, String engine,
       boolean verboseLog) throws Exception {
+    
     LoggerHelper.initialize();
-
+    
     if (verboseLog) {
       LoggerHelper.setDebugLevel();
     }
@@ -62,6 +62,7 @@ public class DatabaseOps {
     }
 
     ExecutionMetadata executionMetadata = new ExecutionMetadata();
+    executionMetadata.setLogPath(System.getProperty("log_path"));
     
     ArrayList<String> executedQueries = new ArrayList<String>();
     ArrayList<String> executedRollbacks = new ArrayList<String>();
