@@ -6,9 +6,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
-import org.usil.oss.common.model.ExecutionMetadata;
 import org.usil.oss.devops.databaseops.DatabaseOps;
 import org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint;
 
@@ -33,11 +34,11 @@ public class SqliteTest {
 
     String sqliteDbFilePath = getDatabaseFileLocation();
     String engine = "sqlite";
-    String host = "";
+    String host = "foo";
     int port = 0;
     String sid = sqliteDbFilePath;
-    String user = "";
-    String password = "";
+    String user = "foo";
+    String password = "foo";
 
     // create two tables
     int tablesCountBefore =
@@ -89,11 +90,11 @@ public class SqliteTest {
 
     String sqliteDbFilePath = getDatabaseFileLocation();
     String engine = "sqlite";
-    String host = "";
+    String host = "foo";
     int port = 0;
     String sid = sqliteDbFilePath;
-    String user = "";
-    String password = "";
+    String user = "foo";
+    String password = "foo";
 
     // create two tables
     int objectsCountBefore = SQLiteJdbc
@@ -110,20 +111,25 @@ public class SqliteTest {
 
     String[] tablesArgs = cmdArguments.split("\\s+");
     DatabaseOps databaseOps = new DatabaseOps();
-    ExecutionMetadata executionMetadata = databaseOps.perform(tablesArgs);
+    HashMap<String, Object> executionDetails = databaseOps.perform(tablesArgs);
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
 
     assertEquals("four new objects were expected", objectsCountBefore + 4, objectsCountAfter);
+
     assertTrue("001.table1.sql should be the script #1",
-        executionMetadata.getExecutedQueryScripts().get(0).endsWith("001.table1.sql"));
+        ((List<String>) executionDetails.get("executedQueryScripts")).get(0)
+            .endsWith("001.table1.sql"));
     assertTrue("002.table2.sql should be the script #2",
-        executionMetadata.getExecutedQueryScripts().get(1).endsWith("002.table2.sql"));
+        ((List<String>) executionDetails.get("executedQueryScripts")).get(1)
+            .endsWith("002.table2.sql"));
     assertTrue("003.view1.sql should be the script #3",
-        executionMetadata.getExecutedQueryScripts().get(2).endsWith("003.view1.sql"));
+        ((List<String>) executionDetails.get("executedQueryScripts")).get(2)
+            .endsWith("003.view1.sql"));
     assertTrue("004.view2.sql should be the script #4",
-        executionMetadata.getExecutedQueryScripts().get(3).endsWith("004.view2.sql"));
+        ((List<String>) executionDetails.get("executedQueryScripts")).get(3)
+            .endsWith("004.view2.sql"));
   }
 
   @Test
@@ -132,11 +138,11 @@ public class SqliteTest {
 
     String sqliteDbFilePath = getDatabaseFileLocation();
     String engine = "sqlite";
-    String host = "";
+    String host = "foo";
     int port = 0;
     String sid = sqliteDbFilePath;
-    String user = "";
-    String password = "";
+    String user = "foo";
+    String password = "foo";
 
     String objectsScriptsFolder = basePath + File.separator
         + "src/test/resources/real.databases/sqlite/without-rollback-files";
@@ -165,11 +171,11 @@ public class SqliteTest {
 
     String sqliteDbFilePath = getDatabaseFileLocation();
     String engine = "sqlite";
-    String host = "";
+    String host = "foo";
     int port = 0;
     String sid = sqliteDbFilePath;
-    String user = "";
-    String password = "";
+    String user = "foo";
+    String password = "foo";
 
     String objectsScriptsFolder = basePath + File.separator
         + "src/test/resources/real.databases/sqlite/error_on_third_script";
@@ -186,22 +192,22 @@ public class SqliteTest {
     int objectsCountBefore = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
 
-    ExecutionMetadata executionMetadata = databaseOps.perform(tablesArgs);
+    HashMap<String, Object> executionDetails = databaseOps.perform(tablesArgs);
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
     
-    assertNotNull("Should exist a log file for error revision.", executionMetadata.getLogPath());
-
     assertEquals(
         "thanks to rollbacks, the database objects count should be the same as before execution",
         objectsCountBefore, objectsCountAfter);
 
     // assert error details
-    assertEquals("status should be error", "error", executionMetadata.getStatus());
-    assertEquals("should be just one error", 1, executionMetadata.getErrorOutputs().size());
+    assertEquals("status should be error", "error", executionDetails.get("status"));
+    assertEquals("should be just one error", 1,
+        ((List<String>) executionDetails.get("errorOutputs")).size());
     assertTrue("response should contain error cause or reason",
-        executionMetadata.getErrorOutputs().get(0).contains("[SQLITE_ERROR] SQL error"));
+        ((List<String>) executionDetails.get("errorOutputs")).get(0)
+            .contains("[SQLITE_ERROR] SQL error"));
 
     // validating rollbacks
     // tables should not exist
@@ -217,13 +223,13 @@ public class SqliteTest {
   public void tablesShouldExistIfRollbackFails() throws Exception {
     String basePath = new File("").getAbsolutePath();
 
-    String sqliteDbFilePath = getDatabaseFileLocation();    
+    String sqliteDbFilePath = getDatabaseFileLocation();
     String engine = "sqlite";
-    String host = "";
+    String host = "foo";
     int port = 0;
     String sid = sqliteDbFilePath;
-    String user = "";
-    String password = "";
+    String user = "foo";
+    String password = "foo";
 
     String objectsScriptsFolder =
         basePath + File.separator + "src/test/resources/real.databases/sqlite/wrong-002-rollback";

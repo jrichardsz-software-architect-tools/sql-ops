@@ -9,7 +9,6 @@
 
 	<properties>
 		<slf4j.version>1.6.4</slf4j.version>
-		<logback.version>1.0.1</logback.version>
 	</properties>
 
 	<build>
@@ -79,7 +78,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.usil.oss.infra.db.dbvops.DbvopsCmdEntrypoint</mainClass>
+							<mainClass>org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -108,14 +107,9 @@
 			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>${logback.version}</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>

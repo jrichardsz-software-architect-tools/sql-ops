@@ -1,10 +1,11 @@
 package org.usil.oss.common.database;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import org.usil.oss.common.file.ClassPathProperties;
 
-public class ConnectionHelper {
+public class ConnectionHelper implements Serializable{
 
   public Connection getConnection(String engine, String host, int port, String databaseName,
       String user, String password) throws Exception {

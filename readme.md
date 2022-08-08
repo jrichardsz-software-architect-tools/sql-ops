@@ -17,6 +17,7 @@ Simple tool to execute any script sql.
 - For each .sql file, you should add a .rollback file. This script is used to revert changes in the database caused by these wrong scripts.
 - Run
 
+
 ```
 java -Duser.timezone=GMT -jar /foo/database-ops.jar \
 --database_host=$database_host \
@@ -26,6 +27,24 @@ java -Duser.timezone=GMT -jar /foo/database-ops.jar \
 --database_password=$database_password \
 --scripts_folder=/bar/baz/scripts \
 --engine=mysql
+```
+
+For a quicky test you could use the internal sqlyog
+
+
+mkdir -p /tmp/workspace
+cp src/test/resources/real.databases/sqlite/chinook.db /tmp/workspace
+cp src/test/resources/real.databases/sqlite/ddl_tables /tmp/workspace -r
+
+```
+java -Duser.timezone=GMT -jar target/database-ops.jar \
+--database_host=foo \
+--database_port=1 \
+--database_name=/tmp/workspace/chinook.db \
+--database_user=foo \
+--database_password=foo \
+--scripts_folder=/tmp/workspace/ddl_tables \
+--engine=sqlite
 ```
 
 # Build

@@ -1,8 +1,10 @@
 package org.usil.oss.devops.databaseops;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,27 +15,51 @@ import org.usil.oss.common.exception.ExceptionHelper;
 import org.usil.oss.common.file.ClassPathProperties;
 import org.usil.oss.common.file.FileHelper;
 import org.usil.oss.common.logger.LoggerHelper;
-import org.usil.oss.common.model.ExecutionMetadata;
+import com.mysql.cj.util.StringUtils;
 
-public class DatabaseOps {
+public class DatabaseOps implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LoggerFactory.getLogger(DatabaseOps.class);
 
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
-  public ExecutionMetadata perform(String databaseHost, int databasePort, String databaseName,
+  public HashMap<String, Object> perform(String databaseHost, int databasePort, String databaseName,
       String databaseUser, String databasePassword, String scriptsFolder, String engine,
       boolean verboseLog) throws Exception {
-    
-    LoggerHelper.initialize();
-    
+
     if (verboseLog) {
       LoggerHelper.setDebugLevel();
+    }
+
+    if (StringUtils.isEmptyOrWhitespaceOnly(databaseHost)) {
+      throw new Exception("database host is required");
+    }
+    if (StringUtils.isEmptyOrWhitespaceOnly(databaseName)) {
+      throw new Exception("database name is required");
+    }
+    if (StringUtils.isEmptyOrWhitespaceOnly(databaseUser)) {
+      throw new Exception("database user is required");
+    }
+    if (StringUtils.isEmptyOrWhitespaceOnly(databasePassword)) {
+      throw new Exception("database password is required");
+    }
+    if (StringUtils.isEmptyOrWhitespaceOnly(scriptsFolder)) {
+      throw new Exception("script folder is required");
+    }
+    if (StringUtils.isEmptyOrWhitespaceOnly(engine)) {
+      throw new Exception("database engine is required");
     }
 
     logger.info("Starting database operations...");
 
     ArrayList<String> queries = FileHelper.readFilesAtRoot(new File(scriptsFolder), ".sql$");
+
+    if (queries.isEmpty()) {
+      throw new Exception("folder don't contains any .sql file: " + scriptsFolder);
+    }
+
     logger.info("scripts");
     logger.info(queries.toString());
 
@@ -61,9 +87,8 @@ public class DatabaseOps {
       logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
     }
 
-    ExecutionMetadata executionMetadata = new ExecutionMetadata();
-    executionMetadata.setLogPath(System.getProperty("log_path"));
-    
+    HashMap<String, Object> executionDetails = new HashMap<String, Object>();
+
     ArrayList<String> executedQueries = new ArrayList<String>();
     ArrayList<String> executedRollbacks = new ArrayList<String>();
     ArrayList<String> rollbackSuccessOutputs = new ArrayList<String>();
@@ -74,14 +99,14 @@ public class DatabaseOps {
       for (String scriptPath : queries) {
         currentScript = scriptPath;
         currentScriptSingleName = currentScript.replaceAll(scriptsFolder, "");
-
+        logger.debug(String.format("script: %s , status: starting", currentScriptSingleName));
         ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, databaseHost,
             databasePort, databaseName, databaseUser, databasePassword, currentScript);
         logger.info(String.format("script: %s , status: success", currentScriptSingleName));
         executedQueries.add(currentScript);
         successOutputs.add(scriptOutput);
       }
-      executionMetadata.setStatus("success");
+      executionDetails.put("status", "success");
       if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
         // detect if errors increased
         afterErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
@@ -92,7 +117,7 @@ public class DatabaseOps {
         }
       }
     } catch (Exception e) {
-      executionMetadata.setStatus("error");
+      executionDetails.put("status", "error");
       String errorMessage = String.format("script: %s , status: error", currentScriptSingleName);
       errorOutputs.add(currentScriptSingleName + " : " + e.getCause());
       if (verboseLog) {
@@ -132,21 +157,21 @@ public class DatabaseOps {
 
     logger.info("By JRichardsz");
 
-    
-    executionMetadata.setAfterErrors(afterErrors);
-    executionMetadata.setBeforeErrors(beforeErrors);
-    executionMetadata.setQueryScripts(queries);
-    executionMetadata.setRollbackScripts(rollbacks);
-    executionMetadata.setExecutedQueryScripts(executedQueries);
-    executionMetadata.setExecutedRollbackScripts(executedRollbacks);
-    executionMetadata.setSuccessOutputs(successOutputs);
-    executionMetadata.setErrorOutputs(errorOutputs);
-    executionMetadata.setRollbackErrorOutputs(rollbackSuccessOutputs);
-    executionMetadata.setRollbackSuccessOutputs(rollbackSuccessOutputs);
-    return executionMetadata;
+
+    executionDetails.put("afterErrors", afterErrors);
+    executionDetails.put("beforeErrors", beforeErrors);
+    executionDetails.put("queryScripts", queries);
+    executionDetails.put("rollbackScripts", rollbacks);
+    executionDetails.put("executedQueryScripts", executedQueries);
+    executionDetails.put("executedRollbackScripts", executedRollbacks);
+    executionDetails.put("successOutputs", successOutputs);
+    executionDetails.put("errorOutputs", errorOutputs);
+    executionDetails.put("rollbackErrorOutputs", rollbackSuccessOutputs);
+    executionDetails.put("rollbackSuccessOutputs", rollbackSuccessOutputs);
+    return executionDetails;
   }
 
-  public ExecutionMetadata perform(String[] args) throws Exception {
+  public HashMap<String, Object> perform(String[] args) throws Exception {
     ArgumentsHelper argumentsHelper = new ArgumentsHelper();
     CommandLine commandLine = argumentsHelper.getArguments(args);
 

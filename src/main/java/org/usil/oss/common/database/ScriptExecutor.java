@@ -1,6 +1,7 @@
 package org.usil.oss.common.database;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import com.mysql.cj.util.StringUtils;
 
-public class ScriptExecutor {
+public class ScriptExecutor implements Serializable {
 
   /**
    * Execute queries composed by statements separated by ';'
