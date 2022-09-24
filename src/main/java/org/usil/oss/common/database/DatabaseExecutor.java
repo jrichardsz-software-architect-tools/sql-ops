@@ -1,12 +1,13 @@
 package org.usil.oss.common.database;
 
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
 import com.mysql.cj.util.StringUtils;
 
-public class DatabaseExecutor {
+public class DatabaseExecutor implements Serializable{
 
   private ScriptExecutor scriptExecutor = new ScriptExecutor();
   private ConnectionHelper connectionHelper = new ConnectionHelper();

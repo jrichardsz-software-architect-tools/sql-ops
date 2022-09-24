@@ -49,8 +49,8 @@ public class FileHelper {
       throws Exception {
 
     ArrayList<String> fileTree = new ArrayList<String>();
-    if (dir == null || dir.listFiles() == null) {
-      throw new Exception("root dir is null or empty: "+dir.getAbsolutePath());
+    if (dir == null) {
+      throw new Exception("file to read is null");
     }
 
     if (dir.listFiles().length == 0) {

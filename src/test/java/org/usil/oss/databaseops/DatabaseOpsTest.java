@@ -6,6 +6,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -13,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.usil.oss.common.database.DatabaseExecutor;
-import org.usil.oss.common.model.ExecutionMetadata;
 import org.usil.oss.devops.databaseops.DatabaseOps;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -24,6 +26,75 @@ public class DatabaseOpsTest {
 
   @InjectMocks
   private DatabaseOps databaseOps;
+
+  @Test
+  public void shouldFailOnMissingParameters() throws Exception {
+    Exception excOnNull = null;
+    try {
+      databaseOps.perform(null, 0, "sid", "user", "password", "scriptsFolder", "engine", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null host", excOnNull);
+
+    excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, null, "user", "password", "scriptsFolder", "engine", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null database name", excOnNull);
+
+    excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, "foo", null, "password", "scriptsFolder", "engine", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null database user", excOnNull);
+
+    excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, "foo", "foo", null, "scriptsFolder", "engine", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null database password", excOnNull);
+
+    excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, "foo", "foo", "foo", null, "engine", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null scripts folder", excOnNull);
+
+    excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, "foo", "foo", "foo", "foo", null, false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on null engine", excOnNull);
+    
+    
+  }
+  
+  @Test
+  public void shouldFailOnEmptyFolder() throws Exception {
+    String emptyFolderPath = System.getProperty("java.io.tmpdir")+File.separator+UUID.randomUUID().toString();
+    File emptyFolder = new File(emptyFolderPath);
+    emptyFolder.mkdirs();
+    
+    Exception excOnNull = null;
+    try {
+      databaseOps.perform("foo", 0, "foo", "foo", "foo", emptyFolderPath, "mysql", false);
+    } catch (Exception e) {
+      excOnNull = e;
+    }
+    assertNotNull("Exception should be throwed on folder with zero scripts", excOnNull);
+    emptyFolder.delete();
+  }
 
   @Test
   public void successExecutionWithoutErrorCheckAndWithoutErrorsUsingParams() throws Exception {
@@ -53,17 +124,17 @@ public class DatabaseOpsTest {
     String scriptsFolder = basePath + File.separator
         + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
 
-    ExecutionMetadata executionMetadata =
+    HashMap<String, Object> executionDetails =
         databaseOps.perform(host, port, sid, user, password, scriptsFolder, engine, false);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(3, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(3, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getErrorOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("errorOutputs")).size());
 
   }
 
@@ -101,16 +172,16 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(3, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(3, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getErrorOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("errorOutputs")).size());
 
   }
 
@@ -148,16 +219,16 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(3, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(3, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getErrorOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("errorOutputs")).size());
 
   }
 
@@ -203,16 +274,16 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(2, executionMetadata.getAfterErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(3, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(3, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getErrorOutputs().size());
+    assertEquals(2, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("errorOutputs")).size());
 
   }
 
@@ -252,21 +323,21 @@ public class DatabaseOpsTest {
             + "--scripts_folder=%s --engine=%s --verbose_log",
         host, port, sid, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(0, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(0, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(0, executionMetadata.getSuccessOutputs().size());
-    assertEquals(0, executionMetadata.getRollbackErrorOutputs().size());
-    assertEquals(1, executionMetadata.getErrorOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("rollbackErrorOutputs")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("errorOutputs")).size());
 
     // tostring assert
     assertNotNull("ExecutionMetadata tostring should be not null to show error info",
-        executionMetadata.toString());
+        executionDetails.toString());
 
   }
 
@@ -305,19 +376,19 @@ public class DatabaseOpsTest {
         host, port, sid, user, password, scriptsFolder, engine);
 
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(1, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(1, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(1, executionMetadata.getSuccessOutputs().size());
-    assertEquals(1, executionMetadata.getErrorOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("errorOutputs")).size());
 
-    assertEquals(true,
-        executionMetadata.getExecutedRollbackScripts().get(0).endsWith("001.sql.rollback"));
+    assertEquals(true, ((List<String>) executionDetails.get("executedRollbackScripts")).get(0)
+        .endsWith("001.sql.rollback"));
   }
 
   @Test
@@ -356,22 +427,22 @@ public class DatabaseOpsTest {
 
     cmdArguments = cmdArguments.replace("@scriptsFolder", scriptsFolder);
     String[] args = cmdArguments.split("\\s+");
-    ExecutionMetadata executionMetadata = databaseOps.perform(args);
+    HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
-    assertEquals(0, executionMetadata.getAfterErrors().size());
-    assertEquals(0, executionMetadata.getBeforeErrors().size());
-    assertEquals(3, executionMetadata.getQueryScripts().size());
-    assertEquals(3, executionMetadata.getRollbackScripts().size());
-    assertEquals(2, executionMetadata.getExecutedQueryScripts().size());
-    assertEquals(2, executionMetadata.getExecutedRollbackScripts().size());
-    assertEquals(2, executionMetadata.getSuccessOutputs().size());
-    assertEquals(1, executionMetadata.getErrorOutputs().size());
-    assertEquals(2, executionMetadata.getRollbackSuccessOutputs().size());
+    assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
+    assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("queryScripts")).size());
+    assertEquals(3, ((List<?>) executionDetails.get("rollbackScripts")).size());
+    assertEquals(2, ((List<?>) executionDetails.get("executedQueryScripts")).size());
+    assertEquals(2, ((List<?>) executionDetails.get("executedRollbackScripts")).size());
+    assertEquals(2, ((List<?>) executionDetails.get("successOutputs")).size());
+    assertEquals(1, ((List<?>) executionDetails.get("errorOutputs")).size());
+    assertEquals(2, ((List<?>) executionDetails.get("rollbackSuccessOutputs")).size());
 
-    assertEquals(true,
-        executionMetadata.getExecutedRollbackScripts().get(0).endsWith("002.sql.rollback"));
-    assertEquals(true,
-        executionMetadata.getExecutedRollbackScripts().get(1).endsWith("001.sql.rollback"));
+    assertEquals(true, ((List<String>) executionDetails.get("executedRollbackScripts")).get(0)
+        .endsWith("002.sql.rollback"));
+    assertEquals(true, ((List<String>) executionDetails.get("executedRollbackScripts")).get(1)
+        .endsWith("001.sql.rollback"));
   }
 
 }
