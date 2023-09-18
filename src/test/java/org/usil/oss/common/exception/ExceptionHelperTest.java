@@ -13,7 +13,7 @@ public class ExceptionHelperTest {
 
   @Test
   public void summarizedNoPretty() {
-    
+
     try {
       throw new Exception("Im a jerk 1");
     } catch (Exception e1) {
@@ -28,6 +28,7 @@ public class ExceptionHelperTest {
       }
     }
   }
+
   @Test
   public void summarizedPretty() {
 

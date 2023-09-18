@@ -36,13 +36,22 @@ public class ArgumentsHelper {
     o6.setRequired(false);
     options.addOption(o6);
 
-    Option o7 = new Option("en", "engine", true, "database engine. current support: oracle and mysql");
+    Option o7 =
+        new Option("en", "engine", true, "database engine. current support: oracle and mysql");
     o7.setRequired(false);
     options.addOption(o7);
 
     Option o8 = new Option("vl", "verbose_log", false, "show debug logs");
     o8.setRequired(false);
     options.addOption(o8);
+
+    Option o9 = new Option("ddu", "database_dba_user", true, "user with dba permissions");
+    o8.setRequired(false);
+    options.addOption(o9);
+
+    Option o10 = new Option("ddup", "database_dba_password", true, "password of dba user");
+    o8.setRequired(false);
+    options.addOption(o10);
 
     CommandLineParser parser = new DefaultParser();
     HelpFormatter formatter = new HelpFormatter();

@@ -26,8 +26,9 @@ public class DatabaseOps implements Serializable {
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
 
   public HashMap<String, Object> perform(String databaseHost, int databasePort, String databaseName,
-      String databaseUser, String databasePassword, String scriptsFolder, String engine,
-      boolean verboseLog) throws Exception {
+      String databaseUser, String databasePassword, String databaseDbaUser,
+      String databaseDbaPassword, String scriptsFolder, String engine, boolean verboseLog)
+      throws Exception {
 
     if (verboseLog) {
       LoggerHelper.setDebugLevel();
@@ -77,14 +78,19 @@ public class DatabaseOps implements Serializable {
     ArrayList<?> afterErrors = new ArrayList<>();
 
     if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
-      sqlShowErrors = FileHelper.getFileAsStringFromClasspath(
-          ClassPathProperties.getProperty(engine + ".errorQueryFile"));
+      if (databaseDbaUser != null && !databaseDbaPassword.isEmpty()) {
+        sqlShowErrors = FileHelper.getFileAsStringFromClasspath(
+            ClassPathProperties.getProperty(engine + ".errorQueryFile"));
 
-      beforeErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
-          databaseName, databaseUser, databasePassword, sqlShowErrors);
+        beforeErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
+            databaseName, databaseUser, databasePassword, sqlShowErrors);
 
-      logger.info("Database errors before the scripts execution: " + beforeErrors.size());
-      logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
+        logger.info("Database errors before the scripts execution: " + beforeErrors.size());
+        logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
+      } else {
+        logger.info(
+            "Super user was not enabled, so the error check before execution is not possible");
+      }
     }
 
     HashMap<String, Object> executionDetails = new HashMap<String, Object>();
@@ -101,19 +107,26 @@ public class DatabaseOps implements Serializable {
         currentScriptSingleName = currentScript.replaceAll(scriptsFolder, "");
 
         ArrayList<?> scriptOutput = databaseHelper.executeSimpleScriptFile(engine, databaseHost,
-            databasePort, databaseName, databaseUser, databasePassword, currentScript);
+            databasePort, databaseName, databaseUser, databasePassword, databaseDbaUser,
+            databaseDbaPassword, currentScript);
         logger.info(String.format("script: %s , status: success", currentScriptSingleName));
         executedQueries.add(currentScript);
         successOutputs.add(scriptOutput);
       }
       executionDetails.put("status", "success");
       if (ClassPathProperties.hasProperty(engine + ".errorQueryFile")) {
-        // detect if errors increased
-        afterErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
-            databaseName, databaseUser, databasePassword, sqlShowErrors);
-        if (afterErrors.size() > beforeErrors.size()) {
-          logger.info("scripts could caused new errors.");
-          logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
+
+        if (databaseDbaUser != null && !databaseDbaPassword.isEmpty()) {
+          // detect if errors increased
+          afterErrors = databaseHelper.executeSimpleScriptString(engine, databaseHost, databasePort,
+              databaseName, databaseDbaUser, databaseDbaPassword, sqlShowErrors);
+          if (afterErrors.size() > beforeErrors.size()) {
+            logger.info("scripts could caused new errors.");
+            logger.info(TableAscciHelper.createSimpleTable(beforeErrors));
+          }
+        } else {
+          logger.info(
+              "Super user was not enabled, so the error check after execution is not possible");
         }
       }
     } catch (Exception e) {
@@ -139,7 +152,8 @@ public class DatabaseOps implements Serializable {
           String singleRollbackScriptName = rollbackFileLocation.replaceAll(scriptsFolder, "");
           try {
             scriptOutput = databaseHelper.executeSimpleScriptFile(engine, databaseHost,
-                databasePort, databaseName, databaseUser, databasePassword, rollbackFileLocation);
+                databasePort, databaseName, databaseUser, databasePassword, databaseDbaUser,
+                databaseDbaPassword, rollbackFileLocation);
             rollbackSuccessOutputs.add(singleRollbackScriptName + " : " + scriptOutput);
             executedRollbacks.add(executedScript + ".rollback");
             logger.error(String.format("rollback: %s , status: success", singleRollbackScriptName));
@@ -156,7 +170,6 @@ public class DatabaseOps implements Serializable {
     }
 
     logger.info("By JRichardsz");
-
 
     executionDetails.put("afterErrors", afterErrors);
     executionDetails.put("beforeErrors", beforeErrors);
@@ -180,11 +193,13 @@ public class DatabaseOps implements Serializable {
     String databaseName = commandLine.getOptionValue("database_name");
     String databaseUser = commandLine.getOptionValue("database_user");
     String databasePassword = commandLine.getOptionValue("database_password");
+    String databaseDbaUser = commandLine.getOptionValue("database_dba_user");
+    String databaseDbaPassword = commandLine.getOptionValue("database_dba_password");
 
     String scriptsFolder = commandLine.getOptionValue("scripts_folder");
     String engine = commandLine.getOptionValue("engine");
     boolean verboseLog = commandLine.hasOption("verbose_log");
     return perform(databaseHost, databasePort, databaseName, databaseUser, databasePassword,
-        scriptsFolder, engine, verboseLog);
+        databaseDbaUser, databaseDbaPassword, scriptsFolder, engine, verboseLog);
   }
 }

@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import org.usil.oss.common.file.ClassPathProperties;
 
-public class ConnectionHelper implements Serializable{
+public class ConnectionHelper implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public Connection getConnection(String engine, String host, int port, String databaseName,
       String user, String password) throws Exception {

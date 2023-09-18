@@ -22,7 +22,7 @@ public class ClassPathProperties {
   }
 
   public static String getProperty(String property) throws Exception {
-    
+
     validateSingleton();
     String value = properties.getProperty(property);
     if (value == null) {

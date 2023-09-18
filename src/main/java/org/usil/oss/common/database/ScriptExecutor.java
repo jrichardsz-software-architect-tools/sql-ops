@@ -11,6 +11,8 @@ import com.mysql.cj.util.StringUtils;
 
 public class ScriptExecutor implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Execute queries composed by statements separated by ';'
    * 

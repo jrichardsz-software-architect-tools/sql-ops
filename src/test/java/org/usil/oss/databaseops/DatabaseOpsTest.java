@@ -18,6 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.usil.oss.common.database.DatabaseExecutor;
 import org.usil.oss.devops.databaseops.DatabaseOps;
 
+@SuppressWarnings("deprecation")
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseOpsTest {
 
@@ -31,7 +32,8 @@ public class DatabaseOpsTest {
   public void shouldFailOnMissingParameters() throws Exception {
     Exception excOnNull = null;
     try {
-      databaseOps.perform(null, 0, "sid", "user", "password", "scriptsFolder", "engine", false);
+      databaseOps.perform(null, 0, "sid", "user", "password", "root", "changeme", "scriptsFolder",
+          "engine", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -39,7 +41,8 @@ public class DatabaseOpsTest {
 
     excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, null, "user", "password", "scriptsFolder", "engine", false);
+      databaseOps.perform("foo", 0, null, "user", "password", "root", "changeme", "scriptsFolder",
+          "engine", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -47,7 +50,8 @@ public class DatabaseOpsTest {
 
     excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, "foo", null, "password", "scriptsFolder", "engine", false);
+      databaseOps.perform("foo", 0, "foo", null, "password", "root", "changeme", "scriptsFolder",
+          "engine", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -55,7 +59,8 @@ public class DatabaseOpsTest {
 
     excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, "foo", "foo", null, "scriptsFolder", "engine", false);
+      databaseOps.perform("foo", 0, "foo", "foo", null, "root", "changeme", "scriptsFolder",
+          "engine", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -63,7 +68,7 @@ public class DatabaseOpsTest {
 
     excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, "foo", "foo", "foo", null, "engine", false);
+      databaseOps.perform("foo", 0, "foo", "foo", "root", "changeme", "foo", null, "engine", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -71,24 +76,26 @@ public class DatabaseOpsTest {
 
     excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, "foo", "foo", "foo", "foo", null, false);
+      databaseOps.perform("foo", 0, "foo", "foo", "foo", "root", "changeme", "foo", null, false);
     } catch (Exception e) {
       excOnNull = e;
     }
     assertNotNull("Exception should be throwed on null engine", excOnNull);
-    
-    
+
+
   }
-  
+
   @Test
   public void shouldFailOnEmptyFolder() throws Exception {
-    String emptyFolderPath = System.getProperty("java.io.tmpdir")+File.separator+UUID.randomUUID().toString();
+    String emptyFolderPath =
+        System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID().toString();
     File emptyFolder = new File(emptyFolderPath);
     emptyFolder.mkdirs();
-    
+
     Exception excOnNull = null;
     try {
-      databaseOps.perform("foo", 0, "foo", "foo", "foo", emptyFolderPath, "mysql", false);
+      databaseOps.perform("foo", 0, "foo", "foo", "foo", "root", "changeme", emptyFolderPath,
+          "mysql", false);
     } catch (Exception e) {
       excOnNull = e;
     }
@@ -109,23 +116,23 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
     String scriptsFolder = basePath + File.separator
         + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
 
-    HashMap<String, Object> executionDetails =
-        databaseOps.perform(host, port, sid, user, password, scriptsFolder, engine, false);
+    HashMap<String, Object> executionDetails = databaseOps.perform(host, port, sid, user, password,
+        "root", "changeme", scriptsFolder, engine, false);
 
     assertEquals(0, ((List<?>) executionDetails.get("afterErrors")).size());
     assertEquals(0, ((List<?>) executionDetails.get("beforeErrors")).size());
@@ -151,15 +158,15 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
@@ -198,15 +205,15 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
@@ -253,26 +260,25 @@ public class DatabaseOpsTest {
         "show dummy1 errors;")).thenReturn(noErrors).thenReturn(twoErrors);
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        "root", "****", password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
     String scriptsFolder = basePath + File.separator
         + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
 
-    String cmdArguments = String.format(
-        "--database_host=%s --database_port=%s "
-            + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-        host, port, sid, user, password, scriptsFolder, engine);
+    String cmdArguments = String.format("--database_host=%s --database_port=%s "
+        + "--database_name=%s --database_user=%s --database_password=%s "
+        + "--database_dba_user=%s --database_dba_password=%s " + "--scripts_folder=%s --engine=%s",
+        host, port, sid, user, password, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
     HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
@@ -302,15 +308,15 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doThrow(new Exception("Im a jerk")).when(databaseHelper).executeSimpleScriptFile(engine, host,
-        port, sid, user, password, new File("").getAbsolutePath()
+        port, sid, user, password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
@@ -320,8 +326,9 @@ public class DatabaseOpsTest {
     String cmdArguments = String.format(
         "--database_host=%s --database_port=%s "
             + "--database_name=%s --database_user=%s --database_password=%s "
+            + "--database_dba_user=%s --database_dba_password=%s "
             + "--scripts_folder=%s --engine=%s --verbose_log",
-        host, port, sid, user, password, scriptsFolder, engine);
+        host, port, sid, user, password, user, password, scriptsFolder, engine);
     String[] args = cmdArguments.split("\\s+");
     HashMap<String, Object> executionDetails = databaseOps.perform(args);
 
@@ -354,26 +361,25 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doThrow(new Exception("Im a jerk")).when(databaseHelper).executeSimpleScriptFile(engine, host,
-        port, sid, user, password, new File("").getAbsolutePath()
+        port, sid, user, password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
     String scriptsFolder = basePath + File.separator
         + "src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest";
 
-    String cmdArguments = String.format(
-        "--database_host=%s --database_port=%s "
-            + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-        host, port, sid, user, password, scriptsFolder, engine);
+    String cmdArguments = String.format("--database_host=%s --database_port=%s "
+        + "--database_name=%s --database_user=%s --database_password=%s "
+        + "--database_dba_user=%s --database_dba_password=%s " + "--scripts_folder=%s --engine=%s",
+        host, port, sid, user, password, user, password, scriptsFolder, engine);
 
     String[] args = cmdArguments.split("\\s+");
     HashMap<String, Object> executionDetails = databaseOps.perform(args);
@@ -404,15 +410,15 @@ public class DatabaseOpsTest {
     result.add("success");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/001.sql");
 
     doReturn(result).when(databaseHelper).executeSimpleScriptFile(engine, host, port, sid, user,
-        password, new File("").getAbsolutePath()
+        password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/002.sql");
 
     doThrow(new Exception("Im a jerk")).when(databaseHelper).executeSimpleScriptFile(engine, host,
-        port, sid, user, password, new File("").getAbsolutePath()
+        port, sid, user, password, user, password, new File("").getAbsolutePath()
             + "/src/test/resources/org/usil/oss/databaseops/DbvopsCmdEntrypointTest/003.sql");
 
     String basePath = new File("").getAbsolutePath();
@@ -422,8 +428,9 @@ public class DatabaseOpsTest {
     String cmdArguments = String.format(
         "--database_host=%s --database_port=%s "
             + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-        host, port, sid, user, password, scriptsFolder, engine);
+            + "--database_dba_user=%s --database_dba_password=%s "
+            + "--scripts_folder=%s --engine=%s --verbose_log",
+        host, port, sid, user, password, user, password, scriptsFolder, engine);
 
     cmdArguments = cmdArguments.replace("@scriptsFolder", scriptsFolder);
     String[] args = cmdArguments.split("\\s+");

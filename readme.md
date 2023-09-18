@@ -37,7 +37,7 @@ mvn clean package
 # Parameters
 
 |parameter|sample value|description|
-| --- | --- | --- |
+|:--- |:--- |:--- |
 |database_host|10.100.15.26|database host|
 |database_port|3306|database port. 1521 for oracle|
 |database_name|value|database name|

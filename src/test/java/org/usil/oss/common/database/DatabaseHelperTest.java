@@ -29,8 +29,7 @@ public class DatabaseHelperTest {
   public void resulsetToArrayOnNullRs() throws Exception {
     try {
       DatabaseHelper.resulsetToArray(null);
-      fail(
-          "My method didn't throw when I expected it to: ResultSet is null");
+      fail("My method didn't throw when I expected it to: ResultSet is null");
     } catch (Exception e) {
     }
   }

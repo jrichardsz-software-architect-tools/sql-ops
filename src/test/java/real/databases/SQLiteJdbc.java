@@ -9,13 +9,14 @@ import org.usil.oss.common.database.DatabaseHelper;
 
 public class SQLiteJdbc {
 
-  public static ArrayList<ArrayList<Object>> exec(String query, String absoluteDbPath) throws Exception {
+  public static ArrayList<ArrayList<Object>> exec(String query, String absoluteDbPath)
+      throws Exception {
 
     ArrayList<ArrayList<Object>> result = null;
     Connection c = null;
     PreparedStatement stmt = null;
     Class.forName("org.sqlite.JDBC");
-    c = DriverManager.getConnection("jdbc:sqlite:"+absoluteDbPath);
+    c = DriverManager.getConnection("jdbc:sqlite:" + absoluteDbPath);
     c.setAutoCommit(false);
 
     stmt = c.prepareStatement(query);

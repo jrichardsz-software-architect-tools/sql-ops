@@ -87,7 +87,7 @@ public class DatabaseExecutorTest {
     doReturn(result).when(scriptExecutor).exec("selec * from dual;", connection);
 
     ArrayList dbResponse = databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost",
-        2708, "sid", "jane", "****", tempFile.toAbsolutePath().toString());
+        2708, "sid", "jane", "****", "root", "****", tempFile.toAbsolutePath().toString());
     assertEquals(1, dbResponse.size());
     assertEquals("success", dbResponse.get(0));
   }
@@ -107,7 +107,7 @@ public class DatabaseExecutorTest {
 
     try {
       databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost", 2708, "sid", "jane",
-          "****", "/foo/bar/baz.sql");
+          "****", "root", "****", "/foo/bar/baz.sql");
       fail(
           "My method didn't throw when I expected it to: executeSimpleScriptString throw an error");
     } catch (Exception e) {

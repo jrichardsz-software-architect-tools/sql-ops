@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class DatabaseHelper {
 
   public static ArrayList<ArrayList<Object>> resulsetToArray(ResultSet rs) throws Exception {
-    if(rs==null) {
+    if (rs == null) {
       throw new Exception("Resulset is null");
     }
     ResultSetMetaData metaData = rs.getMetaData();

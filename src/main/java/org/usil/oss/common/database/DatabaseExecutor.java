@@ -5,15 +5,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Map;
+import org.usil.oss.common.string.StringHelper;
 import com.mysql.cj.util.StringUtils;
 
-public class DatabaseExecutor implements Serializable{
+public class DatabaseExecutor implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   private ScriptExecutor scriptExecutor = new ScriptExecutor();
   private ConnectionHelper connectionHelper = new ConnectionHelper();
 
   public ArrayList<?> executeSimpleScriptFile(String engine, String host, int port, String sid,
-      String user, String password, String queryAbsoluteFilePath) throws Exception {
+      String databaseUser, String databasePassword, String databaseDbaUser,
+      String databaseDbaPassword, String queryAbsoluteFilePath) throws Exception {
     String sqlString = null;
 
     try {
@@ -21,6 +25,23 @@ public class DatabaseExecutor implements Serializable{
     } catch (Exception e) {
       throw new Exception("sql file was not found: " + queryAbsoluteFilePath, e);
     }
+
+    Map<String, String> metadata = StringHelper.getMetadataScript(sqlString);
+
+    String user, password = null;
+    if (metadata.get("use_dba_user") != null
+        && metadata.get("use_dba_user").contentEquals("true")) {
+      user = databaseDbaUser;
+      password = databaseDbaPassword;
+      if (databaseDbaUser == null || databaseDbaUser.isEmpty() || databaseDbaPassword == null
+          || databaseDbaPassword.isEmpty()) {
+        throw new Exception("use_super_user is enabled but there were not configured");
+      }
+    } else {
+      user = databaseUser;
+      password = databasePassword;
+    }
+
     return executeSimpleScriptString(engine, host, port, sid, user, password, sqlString);
   }
 

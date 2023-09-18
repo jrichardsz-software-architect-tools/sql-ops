@@ -14,5 +14,5 @@ public class LoggerHelperTest {
   public void setDebugLevel() {
     LoggerHelper.setDebugLevel();
   }
-  
+
 }

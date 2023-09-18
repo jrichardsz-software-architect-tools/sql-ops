@@ -47,11 +47,10 @@ public class SqliteTest {
     String tablesScriptsFolder =
         basePath + File.separator + "src/test/resources/real.databases/sqlite/ddl_tables";
 
-    String tablesCmdArguments = String.format(
-        "--database_host=%s --database_port=%s "
-            + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-        host, port, sid, user, password, tablesScriptsFolder, engine);
+    String tablesCmdArguments = String.format("--database_host=%s --database_port=%s "
+        + "--database_name=%s --database_user=%s --database_password=%s "
+        + "--database_dba_user=%s --database_dba_password=%s " + "--scripts_folder=%s --engine=%s",
+        host, port, sid, user, password, user, password, tablesScriptsFolder, engine);
 
     String[] tablesArgs = tablesCmdArguments.split("\\s+");
     DatabaseOpsCmdEntrypoint.main(tablesArgs);
@@ -106,8 +105,9 @@ public class SqliteTest {
     String cmdArguments = String.format(
         "--database_host=%s --database_port=%s "
             + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
-        host, port, sid, user, password, objectsScriptsFolder, engine);
+            + "--database_dba_user=%s --database_dba_password=%s "
+            + "--scripts_folder=%s --engine=%s --verbose_log",
+        host, port, sid, user, password, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
     DatabaseOps databaseOps = new DatabaseOps();
@@ -196,7 +196,7 @@ public class SqliteTest {
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
-    
+
     assertEquals(
         "thanks to rollbacks, the database objects count should be the same as before execution",
         objectsCountBefore, objectsCountAfter);

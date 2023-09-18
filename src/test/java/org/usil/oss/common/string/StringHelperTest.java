@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,6 +78,31 @@ public class StringHelperTest {
         .isCommentWithCommand("/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */"));
     assertEquals(false, StringHelper
         .isCommentWithCommand("/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT"));
+  }
+
+  @Test
+  public void getMetadataIfExist() throws Exception {
+    String basePath = new File("").getAbsolutePath();
+    String rawTextPath = basePath + File.separator
+        + "src/test/resources/org/usil/oss/common/string/StringHelperTest/scriptWithMetadata.txt";
+
+    String rawText = new String(Files.readAllBytes(Paths.get(rawTextPath)));
+
+    Map<String, String> metadata = StringHelper.getMetadataScript(rawText);
+
+    assertEquals("true", metadata.get("metadata"));
+    assertEquals("bar", metadata.get("foo"));
+  }
+
+  @Test
+  public void getEmptyMetadataIfNotExist() throws Exception {
+
+    Map<String, String> metadata = StringHelper.getMetadataScript("");
+    assertEquals(0, metadata.size());
+    metadata = StringHelper.getMetadataScript("\\nbar");
+    assertEquals(0, metadata.size());
+    metadata = StringHelper.getMetadataScript("fooo\\nbar");
+    assertEquals(0, metadata.size());
   }
 
 }
