@@ -6,14 +6,16 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.usil.oss.common.string.StringHelper;
 import com.mysql.cj.util.StringUtils;
 
 public class DatabaseExecutor implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private ScriptExecutor scriptExecutor = new ScriptExecutor();
   private ConnectionHelper connectionHelper = new ConnectionHelper();
+  private final Logger logger = LoggerFactory.getLogger(DatabaseExecutor.class);
 
   public ArrayList<?> executeSimpleScriptFile(String engine, String host, int port, String sid,
       String databaseUser, String databasePassword, String databaseDbaUser,
@@ -28,16 +30,21 @@ public class DatabaseExecutor implements Serializable {
 
     Map<String, String> metadata = StringHelper.getMetadataScript(sqlString);
 
+    logger.info("Metadata");
+    logger.info(metadata.toString());
+
     String user, password = null;
     if (metadata.get("use_dba_user") != null
         && metadata.get("use_dba_user").contentEquals("true")) {
       user = databaseDbaUser;
       password = databaseDbaPassword;
+      logger.info("use_dba_user is enabled");
       if (databaseDbaUser == null || databaseDbaUser.isEmpty() || databaseDbaPassword == null
           || databaseDbaPassword.isEmpty()) {
         throw new Exception("use_super_user is enabled but there were not configured");
       }
     } else {
+      logger.info("use_dba_user is not enabled. Simple user will be used");
       user = databaseUser;
       password = databasePassword;
     }
@@ -54,10 +61,10 @@ public class DatabaseExecutor implements Serializable {
 
     Connection conn = connectionHelper.getConnection(engine, host, port, sid, user, password);
     try {
-      ArrayList<?> result = scriptExecutor.exec(sqlString, conn);
+
+      SqlRunner sqlRunner = new SqlRunner(conn, true, true);
+      ArrayList<?> result = sqlRunner.runScript(sqlString);
       return result;
-    } catch (Exception e) {
-      throw new Exception("Failed to execute sql string: " + sqlString, e);
     } finally {
       conn.close();
     }

@@ -31,6 +31,7 @@ public class DatabaseOps implements Serializable {
       throws Exception {
 
     if (verboseLog) {
+      logger.info("Setting debug level");
       LoggerHelper.setDebugLevel();
     }
 
@@ -132,7 +133,7 @@ public class DatabaseOps implements Serializable {
     } catch (Exception e) {
       executionDetails.put("status", "error");
       String errorMessage = String.format("script: %s , status: error", currentScriptSingleName);
-      errorOutputs.add(currentScriptSingleName + " : " + e.getCause());
+      errorOutputs.add(currentScriptSingleName + " : " + e.getMessage());
       if (verboseLog) {
         logger.error(errorMessage, e);
       } else {

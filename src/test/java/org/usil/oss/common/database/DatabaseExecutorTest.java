@@ -2,6 +2,7 @@ package org.usil.oss.common.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,15 +40,22 @@ public class DatabaseExecutorTest {
     when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
         .thenReturn(connection);
 
-    ArrayList result = new ArrayList();
-    result.add("success");
+    Statement statement = mock(Statement.class);
 
-    doReturn(result).when(scriptExecutor).exec("selec * from dual;", connection);
+    when(connection.createStatement()).thenReturn(statement);
+
+    when(statement.execute("selec * from dual ")).thenReturn(true);
+
+    ResultSet mockResultSet = MockResultSet.create(new String[] {"name", "lastname"},
+        new String[][] {{"jane", "doe"}, {"kurt", "weller"}});
+
+    when(statement.getResultSet()).thenReturn(mockResultSet);
 
     ArrayList dbResponse = databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", "selec * from dual;");
-    assertEquals(1, dbResponse.size());
-    assertEquals("success", dbResponse.get(0));
+    assertEquals(2, dbResponse.size());
+    java.util.ArrayList row1 = (ArrayList) dbResponse.get(0);
+    assertEquals("jane", row1.get(0));
   }
 
   @Test
@@ -78,18 +88,25 @@ public class DatabaseExecutorTest {
     when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
         .thenReturn(connection);
 
-    ArrayList result = new ArrayList();
-    result.add("success");
+    Statement statement = mock(Statement.class);
+
+    when(connection.createStatement()).thenReturn(statement);
+
+    when(statement.execute("selec * from dual ")).thenReturn(true);
+
+    ResultSet mockResultSet = MockResultSet.create(new String[] {"name", "lastname"},
+        new String[][] {{"jane", "doe"}, {"kurt", "weller"}});
+
+    when(statement.getResultSet()).thenReturn(mockResultSet);
 
     Path tempFile = Files.createTempFile("databaseops-test-sql-", null);
     Files.write(tempFile, "selec * from dual;".getBytes(StandardCharsets.UTF_8));
 
-    doReturn(result).when(scriptExecutor).exec("selec * from dual;", connection);
-
     ArrayList dbResponse = databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", "root", "****", tempFile.toAbsolutePath().toString());
-    assertEquals(1, dbResponse.size());
-    assertEquals("success", dbResponse.get(0));
+    assertEquals(2, dbResponse.size());
+    java.util.ArrayList row1 = (ArrayList) dbResponse.get(0);
+    assertEquals("jane", row1.get(0));
   }
 
   @Test

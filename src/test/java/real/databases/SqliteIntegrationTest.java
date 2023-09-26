@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.usil.oss.devops.databaseops.DatabaseOps;
 import org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint;
 
-public class SqliteTest {
+public class SqliteIntegrationTest {
 
   public String getDatabaseFileLocation() throws Exception {
     String basePath = new File("").getAbsolutePath();
@@ -183,7 +183,7 @@ public class SqliteTest {
     String cmdArguments = String.format(
         "--database_host=%s --database_port=%s "
             + "--database_name=%s --database_user=%s --database_password=%s "
-            + "--scripts_folder=%s --engine=%s",
+            + "--scripts_folder=%s --engine=%s --verbose_log",
         host, port, sid, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
@@ -193,6 +193,8 @@ public class SqliteTest {
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
 
     HashMap<String, Object> executionDetails = databaseOps.perform(tablesArgs);
+
+    System.out.println(executionDetails);
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
