@@ -73,7 +73,6 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<finalName>${project.artifactId}</finalName>
-					<classifier>jar</classifier>
 					<appendAssemblyId>false</appendAssemblyId>
 					<archive>
 						<manifest>
