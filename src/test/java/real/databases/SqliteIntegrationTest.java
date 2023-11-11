@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
-import org.usil.oss.devops.databaseops.DatabaseOps;
-import org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint;
+import org.usil.oss.devops.sqlops.SqlOps;
+import org.usil.oss.devops.sqlops.SqlOpsCmdEntrypoint;
 
 public class SqliteIntegrationTest {
 
@@ -53,7 +53,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, user, password, tablesScriptsFolder, engine);
 
     String[] tablesArgs = tablesCmdArguments.split("\\s+");
-    DatabaseOpsCmdEntrypoint.main(tablesArgs);
+    SqlOpsCmdEntrypoint.main(tablesArgs);
 
     int tablesCountAfter =
         SQLiteJdbc.exec("SELECT * FROM sqlite_master WHERE type='table'", sqliteDbFilePath).size();
@@ -74,7 +74,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, viewsScriptsFolder, engine);
 
     String[] viewsArgs = viewsCmdArguments.split("\\s+");
-    DatabaseOpsCmdEntrypoint.main(viewsArgs);
+    SqlOpsCmdEntrypoint.main(viewsArgs);
 
     int viewsCountAfter =
         SQLiteJdbc.exec("SELECT * FROM sqlite_master WHERE type='view'", sqliteDbFilePath).size();
@@ -110,7 +110,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
-    DatabaseOps databaseOps = new DatabaseOps();
+    SqlOps databaseOps = new SqlOps();
     HashMap<String, Object> executionDetails = databaseOps.perform(tablesArgs);
 
     int objectsCountAfter = SQLiteJdbc
@@ -154,7 +154,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
-    DatabaseOps databaseOps = new DatabaseOps();
+    SqlOps databaseOps = new SqlOps();
 
     Exception e = null;
     try {
@@ -187,7 +187,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
-    DatabaseOps databaseOps = new DatabaseOps();
+    SqlOps databaseOps = new SqlOps();
 
     int objectsCountBefore = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();
@@ -243,7 +243,7 @@ public class SqliteIntegrationTest {
         host, port, sid, user, password, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
-    DatabaseOps databaseOps = new DatabaseOps();
+    SqlOps databaseOps = new SqlOps();
 
     int objectsCountBefore = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();

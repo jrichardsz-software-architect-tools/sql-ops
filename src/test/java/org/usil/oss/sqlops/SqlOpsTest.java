@@ -1,4 +1,4 @@
-package org.usil.oss.databaseops;
+package org.usil.oss.sqlops;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -16,17 +16,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.usil.oss.common.database.DatabaseExecutor;
-import org.usil.oss.devops.databaseops.DatabaseOps;
+import org.usil.oss.devops.sqlops.SqlOps;
 
 @SuppressWarnings("deprecation")
 @RunWith(MockitoJUnitRunner.class)
-public class DatabaseOpsTest {
+public class SqlOpsTest {
 
   @Mock
   private DatabaseExecutor databaseHelper;
 
   @InjectMocks
-  private DatabaseOps databaseOps;
+  private SqlOps databaseOps;
 
   @Test
   public void shouldFailOnMissingParameters() throws Exception {

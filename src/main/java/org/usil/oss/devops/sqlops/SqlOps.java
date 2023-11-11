@@ -1,4 +1,4 @@
-package org.usil.oss.devops.databaseops;
+package org.usil.oss.devops.sqlops;
 
 import com.mysql.cj.util.StringUtils;
 import java.io.File;
@@ -17,10 +17,10 @@ import org.usil.oss.common.file.ClassPathProperties;
 import org.usil.oss.common.file.FileHelper;
 import org.usil.oss.common.logger.LoggerHelper;
 
-public class DatabaseOps implements Serializable {
+public class SqlOps implements Serializable {
   private static final long serialVersionUID = 1L;
   
-  private static final Logger logger = LoggerFactory.getLogger(DatabaseOps.class);
+  private static final Logger logger = LoggerFactory.getLogger(SqlOps.class);
   
   private DatabaseExecutor databaseHelper = new DatabaseExecutor();
   

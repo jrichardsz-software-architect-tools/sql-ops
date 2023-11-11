@@ -81,13 +81,14 @@ public class SqlRunner {
         command.append(" ");
         Statement stmt = null;
         ResultSet rs = null;
+        String computedRawSql = command.toString();
         try {
           stmt = conn.createStatement();
           this.logger.debug("Final block to execute:");
-          this.logger.debug(command.toString());
+          this.logger.debug(computedRawSql);
           boolean hasResults = false;
           if (this.stopOnError) {
-            hasResults = stmt.execute(command.toString());
+            hasResults = stmt.execute(computedRawSql);
           } else {
             stmt.execute(command.toString());
           } 
@@ -102,7 +103,12 @@ public class SqlRunner {
             this.logger.debug("Updated rows: " + stmt.getUpdateCount());
           } 
           command = null;
-        } finally {
+        }catch(Exception e) {
+          System.out.println(computedRawSql);
+          this.logger.info(computedRawSql);
+          throw e;
+        }
+        finally {
           if (rs != null)
             try {
               rs.close();

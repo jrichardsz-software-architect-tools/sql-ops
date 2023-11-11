@@ -2,8 +2,6 @@ package org.usil.oss.common.database;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,7 +25,7 @@ public class DatabaseExecutorTest {
   private ConnectionHelper connectionHelper;
 
   @Mock
-  private ScriptExecutor scriptExecutor;
+  private SqlRunner sqlRunner;
 
   @InjectMocks
   private DatabaseExecutor databaseHelper;
@@ -69,7 +67,7 @@ public class DatabaseExecutorTest {
     ArrayList result = new ArrayList();
     result.add("adasd");
 
-    doThrow(new Exception("Im a jerk")).when(scriptExecutor).exec("selec * from dual;", connection);
+    doThrow(new Exception("Im a jerk")).when(sqlRunner).runScript("selec * from dual;");
 
     try {
       databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
@@ -120,7 +118,7 @@ public class DatabaseExecutorTest {
     ArrayList result = new ArrayList();
     result.add("adasd");
 
-    doThrow(new Exception("Im a jerk")).when(scriptExecutor).exec("selec * from dual;", connection);
+    doThrow(new Exception("Im a jerk")).when(sqlRunner).runScript("selec * from dual;");
 
     try {
       databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost", 2708, "sid", "jane",

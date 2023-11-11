@@ -1,6 +1,6 @@
 package real.databases;
 
-import org.usil.oss.devops.databaseops.DatabaseOps;
+import org.usil.oss.devops.sqlops.SqlOps;
 
 public class MysqlIntegrationTest {
 
@@ -25,7 +25,7 @@ public class MysqlIntegrationTest {
         host, port, sid, user, password, root, rootPassword, objectsScriptsFolder, engine);
 
     String[] tablesArgs = cmdArguments.split("\\s+");
-    DatabaseOps databaseOps = new DatabaseOps();
+    SqlOps databaseOps = new SqlOps();
     String status = (String) databaseOps.perform(tablesArgs).get("status");
     if (!status.contentEquals("success")) {
       throw new Exception("mysql: simple dump failed");

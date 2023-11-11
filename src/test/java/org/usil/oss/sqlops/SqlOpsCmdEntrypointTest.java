@@ -1,28 +1,28 @@
-package org.usil.oss.databaseops;
+package org.usil.oss.sqlops;
 
 import java.lang.reflect.Field;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.usil.oss.devops.databaseops.DatabaseOps;
-import org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint;
+import org.usil.oss.devops.sqlops.SqlOps;
+import org.usil.oss.devops.sqlops.SqlOpsCmdEntrypoint;
 
-public class DatabaseOpsCmdEntrypointTest {
+public class SqlOpsCmdEntrypointTest {
 
   @Test
   public void constructor() {
-    new DatabaseOpsCmdEntrypoint();
+    new SqlOpsCmdEntrypoint();
   }
 
   @Test
   public void shouldFailOnUnknownDriver() throws Exception {
 
-    DatabaseOps databaseOps = Mockito.mock(DatabaseOps.class);
+    SqlOps databaseOps = Mockito.mock(SqlOps.class);
     Mockito.doReturn(null).when(databaseOps).perform(new String[] {"p1"});
     // danger: changing databaseOps in DatabaseOpsCmdEntrypoint
-    setStatic(DatabaseOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), databaseOps);
-    DatabaseOpsCmdEntrypoint.main(new String[] {"p1"});
+    setStatic(SqlOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), databaseOps);
+    SqlOpsCmdEntrypoint.main(new String[] {"p1"});
     // restoring databaseOps in DatabaseOpsCmdEntrypoint
-    setStatic(DatabaseOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), new DatabaseOps());
+    setStatic(SqlOpsCmdEntrypoint.class.getDeclaredField("databaseOps"), new SqlOps());
     // TODO: if I'm not restoring, another tests like SqliteTest which uses DatabaseOpsCmdEntrypoint
     // is invoking the mock databaseOps, not the real
     // https://stackoverflow.com/a/34921820/3957754
