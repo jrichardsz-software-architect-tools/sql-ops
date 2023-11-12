@@ -95,9 +95,9 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>com.jrichardsz</groupId>
-				<artifactId>jacoco-easy-badger-maven-plugin</artifactId>
-				<version>1.0.0</version>
+				<groupId>com.sigpwned</groupId>
+				<artifactId>jacoco-badge-maven-plugin</artifactId>
+				<version>0.1.6</version>
 				<executions>
 					<execution>
 						<id>generate-jacoco-badge</id>

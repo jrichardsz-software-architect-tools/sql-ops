@@ -5,11 +5,11 @@ public class ExceptionHelper {
     StringBuilder builder = new StringBuilder();
     while (throwable != null) {
       if (pretty)
-        builder.append("\n\n"); 
-      builder.append(
-          String.format("Caused by: %s:%s ,", new Object[] { throwable.getClass(), throwable.getMessage() }));
+        builder.append("\n\n");
+      builder.append(String.format("Caused by: %s:%s ,",
+          new Object[] {throwable.getClass(), throwable.getMessage()}));
       throwable = throwable.getCause();
-    } 
+    }
     return builder.toString();
   }
 }

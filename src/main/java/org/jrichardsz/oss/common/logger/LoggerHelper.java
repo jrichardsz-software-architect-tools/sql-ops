@@ -10,6 +10,6 @@ public class LoggerHelper {
     Logger rootLogger = LogManager.getLogManager().getLogger("");
     rootLogger.setLevel(Level.FINE);
     for (Handler h : rootLogger.getHandlers())
-      h.setLevel(Level.FINE); 
+      h.setLevel(Level.FINE);
   }
 }

@@ -1,9 +1,11 @@
 # sql-ops
 
-<img src="./.coverage/branch.svg">
-<img src="./.coverage/method.svg">
-<img src="./.coverage/line.svg">
-<img src="./.coverage/complexity.svg">
+<p float="left">
+  <img src="./.coverage/branch.svg">
+  <img src="./.coverage/method.svg">
+  <img src="./.coverage/line.svg">
+  <img src="./.coverage/complexity.svg">
+</p>
 
 A simple tool to execute any sql script.
 

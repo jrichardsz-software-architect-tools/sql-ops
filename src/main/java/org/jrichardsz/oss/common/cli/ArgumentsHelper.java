@@ -27,7 +27,8 @@ public class ArgumentsHelper {
     Option o6 = new Option("sf", "scripts_folder", true, "abolute path of folder with scripts");
     o6.setRequired(false);
     options.addOption(o6);
-    Option o7 = new Option("en", "engine", true, "database engine. current support: oracle and mysql");
+    Option o7 =
+        new Option("en", "engine", true, "database engine. current support: oracle and mysql");
     o7.setRequired(false);
     options.addOption(o7);
     Option o8 = new Option("vl", "verbose_log", false, "show debug logs");
@@ -47,6 +48,6 @@ public class ArgumentsHelper {
     } catch (Exception e) {
       formatter.printHelp("dbvops", options);
       throw new Exception("Failed to receive the arguments.", e);
-    } 
+    }
   }
 }

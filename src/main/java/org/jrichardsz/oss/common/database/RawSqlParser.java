@@ -55,7 +55,7 @@ public class RawSqlParser {
         command.append(line.substring(0, line.lastIndexOf(this.delimiter)));
         command.append(" ");
         String computedRawSql = command.toString();
-        this.logger.debug("block: "+computedRawSql.trim());
+        this.logger.debug("block: " + computedRawSql.trim());
         sqlBlocks.add(computedRawSql.trim());
         this.delimiter = ";";
         command = null;

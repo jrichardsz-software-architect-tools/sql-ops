@@ -16,7 +16,7 @@ import org.jrichardsz.oss.devops.sqlops.SqlOps;
 import org.jrichardsz.oss.devops.sqlops.SqlOpsCmdEntrypoint;
 
 public class SqliteIntegrationTest {
-  
+
   private final Logger logger = LoggerFactory.getLogger(SqliteIntegrationTest.class);
 
   public String getDatabaseFileLocation() throws Exception {

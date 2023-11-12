@@ -7,14 +7,15 @@ import org.jrichardsz.oss.common.file.ClassPathProperties;
 
 public class ConnectionHelper implements Serializable {
   private static final long serialVersionUID = 1L;
-  
-  public Connection getConnection(String engine, String host, int port, String databaseName, String user, String password) throws Exception {
+
+  public Connection getConnection(String engine, String host, int port, String databaseName,
+      String user, String password) throws Exception {
     String driver = ClassPathProperties.getProperty(engine + ".driver");
     try {
       Class.forName(driver);
     } catch (Exception e) {
       throw new Exception("Failed to stabilish connection", e);
-    } 
+    }
     try {
       String jdbcUrlTemplate = ClassPathProperties.getProperty(engine + ".jdbcUrlTemplate");
       jdbcUrlTemplate = jdbcUrlTemplate.replace("#host", host);
@@ -24,6 +25,6 @@ public class ConnectionHelper implements Serializable {
       return DriverManager.getConnection(jdbcUrlTemplate, user, password);
     } catch (Exception e) {
       throw new Exception("Failed to stabilish connection.", e);
-    } 
+    }
   }
 }
