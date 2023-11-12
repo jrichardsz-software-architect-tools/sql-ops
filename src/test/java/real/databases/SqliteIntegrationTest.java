@@ -12,8 +12,8 @@ import java.util.UUID;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usil.oss.devops.sqlops.SqlOps;
-import org.usil.oss.devops.sqlops.SqlOpsCmdEntrypoint;
+import org.jrichardsz.oss.devops.sqlops.SqlOps;
+import org.jrichardsz.oss.devops.sqlops.SqlOpsCmdEntrypoint;
 
 public class SqliteIntegrationTest {
   

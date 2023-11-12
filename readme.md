@@ -1,9 +1,11 @@
-# database-ops
+# sql-ops
 
-Simple tool to execute any script sql.
+<img src="./.coverage/branch.svg">
+<img src="./.coverage/method.svg">
+<img src="./.coverage/line.svg">
+<img src="./.coverage/complexity.svg">
 
-![](./coverage.png)
-![](./branch.png)
+A simple tool to execute any sql script.
 
 # Requirements
 

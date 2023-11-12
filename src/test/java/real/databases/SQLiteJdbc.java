@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.usil.oss.common.database.DatabaseHelper;
+import org.jrichardsz.oss.common.database.DatabaseHelper;
 
 public class SQLiteJdbc {
 

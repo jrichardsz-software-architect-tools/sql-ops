@@ -1,6 +1,6 @@
 package real.databases;
 
-import org.usil.oss.devops.sqlops.SqlOps;
+import org.jrichardsz.oss.devops.sqlops.SqlOps;
 
 public class MysqlIntegrationTest {
 

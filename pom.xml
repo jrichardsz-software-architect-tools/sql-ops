@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.usil.oss.devops</groupId>
+	<groupId>org.jrichardsz.oss.devops</groupId>
 	<artifactId>sql-ops</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
@@ -64,7 +64,6 @@
 									</limits>
 								</rule>
 							</rules>
-
 						</configuration>
 					</execution>
 				</executions>
@@ -92,6 +91,27 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.jrichardsz</groupId>
+				<artifactId>jacoco-easy-badger-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<id>generate-jacoco-badge</id>
+						<phase>package</phase>
+						<goals>
+							<!-- Generate a badge from a unified JaCoCo report -->
+							<goal>badge</goal>
+						</goals>
+						<configuration>
+							<reportFile>
+								${project.build.directory}/site/jacoco/jacoco.csv</reportFile>
+							<badgesFolder>${project.basedir}/.coverage</badgesFolder>
+							<passing>70</passing>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

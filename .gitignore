@@ -5,5 +5,8 @@
 !src
 !pom.xml
 !readme.md
-!branch.png
-!coverage.png
+!.coverage
+!.coverage/complexity.svg
+!.coverage/method.svg
+!.coverage/line.svg
+!.coverage/branch.svg
