@@ -12,28 +12,20 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DatabaseExecutorTest {
 
-  @Mock
-  private ConnectionHelper connectionHelper;
-
-  @Mock
-  private SqlRunner sqlRunner;
-
-  @InjectMocks
-  private DatabaseExecutor databaseHelper;
+  private final Logger logger = LoggerFactory.getLogger(DatabaseExecutorTest.class);
 
   @Test
   public void executeSimpleScriptStringForSuccess() throws Exception {
 
     Connection connection = mock(Connection.class);
+    ConnectionHelper connectionHelper = mock(ConnectionHelper.class);
 
     when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
         .thenReturn(connection);
@@ -42,14 +34,17 @@ public class DatabaseExecutorTest {
 
     when(connection.createStatement()).thenReturn(statement);
 
-    when(statement.execute("selec * from dual ")).thenReturn(true);
+    when(statement.execute("selec * from dual")).thenReturn(true);
 
     ResultSet mockResultSet = MockResultSet.create(new String[] {"name", "lastname"},
         new String[][] {{"jane", "doe"}, {"kurt", "weller"}});
 
     when(statement.getResultSet()).thenReturn(mockResultSet);
 
-    ArrayList dbResponse = databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost",
+    DatabaseExecutor databaseExecutor = new DatabaseExecutor();
+    FieldUtils.writeField(databaseExecutor, "connectionHelper", connectionHelper, true);
+
+    ArrayList dbResponse = databaseExecutor.executeSimpleScriptString("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", "selec * from dual;");
     assertEquals(2, dbResponse.size());
     java.util.ArrayList row1 = (ArrayList) dbResponse.get(0);
@@ -59,29 +54,30 @@ public class DatabaseExecutorTest {
   @Test
   public void executeSimpleScriptStringForError() throws Exception {
 
-    Connection connection = mock(Connection.class);
+    ConnectionHelper connectionHelper = mock(ConnectionHelper.class);
 
-    when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
-        .thenReturn(connection);
+    doThrow(new Exception("Im a jerk")).when(connectionHelper).getConnection("DatabaseHelper",
+        "localhost", 2708, "sid", "jane", "****");
 
-    ArrayList result = new ArrayList();
-    result.add("adasd");
-
-    doThrow(new Exception("Im a jerk")).when(sqlRunner).runScript("selec * from dual;");
+    DatabaseExecutor databaseExecutor = new DatabaseExecutor();
+    FieldUtils.writeField(databaseExecutor, "connectionHelper", connectionHelper, true);
 
     try {
-      databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
+      databaseExecutor.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
           "****", "selec * from dual;");
       fail(
           "My method didn't throw when I expected it to: executeSimpleScriptString throw an error");
     } catch (Exception e) {
+      this.logger.debug("Exception was expected o_O");
     }
+
   }
 
   @Test
   public void executeSimpleScriptFileForSuccess() throws Exception {
 
     Connection connection = mock(Connection.class);
+    ConnectionHelper connectionHelper = mock(ConnectionHelper.class);
 
     when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
         .thenReturn(connection);
@@ -90,17 +86,20 @@ public class DatabaseExecutorTest {
 
     when(connection.createStatement()).thenReturn(statement);
 
-    when(statement.execute("selec * from dual ")).thenReturn(true);
+    when(statement.execute("selec * from dual")).thenReturn(true);
 
     ResultSet mockResultSet = MockResultSet.create(new String[] {"name", "lastname"},
         new String[][] {{"jane", "doe"}, {"kurt", "weller"}});
 
     when(statement.getResultSet()).thenReturn(mockResultSet);
 
+    DatabaseExecutor databaseExecutor = new DatabaseExecutor();
+    FieldUtils.writeField(databaseExecutor, "connectionHelper", connectionHelper, true);
+
     Path tempFile = Files.createTempFile("databaseops-test-sql-", null);
     Files.write(tempFile, "selec * from dual;".getBytes(StandardCharsets.UTF_8));
 
-    ArrayList dbResponse = databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost",
+    ArrayList dbResponse = databaseExecutor.executeSimpleScriptFile("DatabaseHelper", "localhost",
         2708, "sid", "jane", "****", "root", "****", tempFile.toAbsolutePath().toString());
     assertEquals(2, dbResponse.size());
     java.util.ArrayList row1 = (ArrayList) dbResponse.get(0);
@@ -110,33 +109,42 @@ public class DatabaseExecutorTest {
   @Test
   public void executeSimpleScriptFileForError() throws Exception {
 
-    Connection connection = mock(Connection.class);
+    ConnectionHelper connectionHelper = mock(ConnectionHelper.class);
 
-    when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
-        .thenReturn(connection);
+    doThrow(new Exception("Im a jerk")).when(connectionHelper).getConnection("DatabaseHelper",
+        "localhost", 2708, "sid", "jane", "****");
 
-    ArrayList result = new ArrayList();
-    result.add("adasd");
-
-    doThrow(new Exception("Im a jerk")).when(sqlRunner).runScript("selec * from dual;");
+    DatabaseExecutor databaseExecutor = new DatabaseExecutor();
+    FieldUtils.writeField(databaseExecutor, "connectionHelper", connectionHelper, true);
 
     try {
-      databaseHelper.executeSimpleScriptFile("DatabaseHelper", "localhost", 2708, "sid", "jane",
+      databaseExecutor.executeSimpleScriptFile("DatabaseHelper", "localhost", 2708, "sid", "jane",
           "****", "root", "****", "/foo/bar/baz.sql");
       fail(
           "My method didn't throw when I expected it to: executeSimpleScriptString throw an error");
     } catch (Exception e) {
+      this.logger.debug("Exception was expected o_O");
     }
   }
 
   @Test
   public void executeEmptyBlankScript() throws Exception {
 
+    Connection connection = mock(Connection.class);
+    ConnectionHelper connectionHelper = mock(ConnectionHelper.class);
+
+    when(connectionHelper.getConnection("DatabaseHelper", "localhost", 2708, "sid", "jane", "****"))
+        .thenReturn(connection);
+
+    DatabaseExecutor databaseExecutor = new DatabaseExecutor();
+    FieldUtils.writeField(databaseExecutor, "connectionHelper", connectionHelper, true);
+
     try {
-      databaseHelper.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
+      databaseExecutor.executeSimpleScriptString("DatabaseHelper", "localhost", 2708, "sid", "jane",
           "****", "");
       fail("My method didn't throw when I expected it to: script is empty");
     } catch (Exception e) {
+      this.logger.debug("Exception was expected o_O");
     }
   }
 }

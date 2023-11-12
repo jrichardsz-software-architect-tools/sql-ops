@@ -51,9 +51,10 @@ public class DatabaseExecutor implements Serializable {
     Connection conn = this.connectionHelper.getConnection(engine, host, port, sid, user, password);
     try {
       SqlRunner sqlRunner = new SqlRunner(conn, true, true);
-      ArrayList<?> result = sqlRunner.runScript(sqlString);
+      ArrayList<?> result = sqlRunner.runScript(sqlString);      
       return result;
-    } finally {
+    }
+    finally {
       conn.close();
     } 
   }

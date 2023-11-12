@@ -10,10 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.usil.oss.devops.sqlops.SqlOps;
 import org.usil.oss.devops.sqlops.SqlOpsCmdEntrypoint;
 
 public class SqliteIntegrationTest {
+  
+  private final Logger logger = LoggerFactory.getLogger(SqliteIntegrationTest.class);
 
   public String getDatabaseFileLocation() throws Exception {
     String basePath = new File("").getAbsolutePath();
@@ -194,7 +198,7 @@ public class SqliteIntegrationTest {
 
     HashMap<String, Object> executionDetails = databaseOps.perform(tablesArgs);
 
-    System.out.println(executionDetails);
+    this.logger.debug(executionDetails.toString());
 
     int objectsCountAfter = SQLiteJdbc
         .exec("SELECT * FROM sqlite_master where type in('view','table')", sqliteDbFilePath).size();

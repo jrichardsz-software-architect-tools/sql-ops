@@ -96,12 +96,13 @@ public class SqlOps implements Serializable {
     } catch (Exception e) {
       executionDetails.put("status", "error");
       String errorMessage = String.format("script: %s , status: error", new Object[] { currentScriptSingleName });
-      errorOutputs.add(currentScriptSingleName + " : " + e.getMessage());
+      String errorCausesSummary = ExceptionHelper.summarizeTrace(e, true);
+      errorOutputs.add(currentScriptSingleName + " : " + errorCausesSummary);
       if (verboseLog) {
         logger.error(errorMessage, e);
       } else {
         logger.error(errorMessage);
-        logger.error(ExceptionHelper.summarizeTrace(e, true));
+        logger.error(errorCausesSummary);
       } 
       logger.info("Rollback scripts will be executed");
       if (executedQueries.size() < 1) {

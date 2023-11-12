@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<slf4j.version>1.6.4</slf4j.version>
+		<slf4j.version>2.0.9</slf4j.version>
 	</properties>
 
 	<build>
@@ -45,15 +45,18 @@
 						</goals>
 						<configuration>
 							<rules>
-								<rule implementation="org.jacoco.maven.RuleConfiguration">
+								<rule
+									implementation="org.jacoco.maven.RuleConfiguration">
 									<element>BUNDLE</element>
 									<limits>
-										<limit implementation="org.jacoco.report.check.Limit">
+										<limit
+											implementation="org.jacoco.report.check.Limit">
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>0.80</minimum>
 										</limit>
-										<limit implementation="org.jacoco.report.check.Limit">
+										<limit
+											implementation="org.jacoco.report.check.Limit">
 											<counter>CLASS</counter>
 											<value>MISSEDCOUNT</value>
 											<maximum>2</maximum>
@@ -77,7 +80,8 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint</mainClass>
+							<mainClass>
+								org.usil.oss.devops.databaseops.DatabaseOpsCmdEntrypoint</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -109,7 +113,9 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
@@ -135,6 +141,12 @@
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
 			<version>1.7.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
