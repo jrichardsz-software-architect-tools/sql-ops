@@ -81,7 +81,7 @@ public class SqlRunner {
         this.logger.debug("No results. Updated rows: " + stmt.getUpdateCount());
       }
     } catch (Exception e) {
-      throw new Exception("Failed to execute this sql block: " + queryBlock, e);
+      throw new Exception("Failed to execute this sql block: \\n\\n" + queryBlock, e);
     } finally {
       if (rs != null)
         try {
