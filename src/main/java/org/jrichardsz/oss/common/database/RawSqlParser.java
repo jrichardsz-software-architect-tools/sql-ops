@@ -33,10 +33,11 @@ public class RawSqlParser {
     while ((line = lineReader.readLine()) != null) {
       if (command == null)
         command = new StringBuffer();
-      String trimmedLine = line.trim();
+      String trimmedLine = line;
+      this.logger.debug("\n");
       this.logger.debug("initial line: " + trimmedLine);
       if (trimmedLine.endsWith(this.delimiter)) {
-        this.logger.debug("Line ends with delimiter");
+        this.logger.debug("Line ends with delimiter ["+this.delimiter+"]");
         Pattern pattern1 = Pattern.compile("(?i)DELIMITER.+");
         Matcher matcher1 = pattern1.matcher(trimmedLine);
         if (matcher1.matches()) {
@@ -49,11 +50,12 @@ public class RawSqlParser {
         this.logger.debug("new line:" + line);
         if (line.lastIndexOf(this.delimiter) < 0) {
           command.append(line);
+          command.append(System.getProperty("line.separator"));
           continue;
         }
         this.logger.debug("append:" + line.substring(0, line.lastIndexOf(this.delimiter)));
         command.append(line.substring(0, line.lastIndexOf(this.delimiter)));
-        command.append(" ");
+        command.append(System.getProperty("line.separator"));
         String computedRawSql = command.toString();
         this.logger.debug("block: " + computedRawSql.trim());
         sqlBlocks.add(computedRawSql.trim());
@@ -72,7 +74,7 @@ public class RawSqlParser {
         trimmedLine = line.trim();
       }
       command.append(line);
-      command.append("\n");
+      command.append(System.getProperty("line.separator"));      
     }
 
     return sqlBlocks;

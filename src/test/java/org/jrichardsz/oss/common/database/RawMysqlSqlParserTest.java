@@ -41,10 +41,35 @@ public class RawMysqlSqlParserTest {
     for (int i = 0; i < expectedBlock2.length; i++) {
       assertEquals(expectedBlock2[i], block2[i]);
     }
-
-
   }
+  
+  // The script 
+  // resources/org/usil/oss/common/database/RawMysqlSqlParserTest/mysqlDumpWithSpaceAtTheEnd.sql
+  // in the line 3, ends without a space
+  @Test
+  public void mysqlDumpWithSpaceAtTheEnd() throws Exception {
 
+    String basePath = new File("").getAbsolutePath();
+    String sqlFilePath = basePath + File.separator
+        + "src/test/resources/org/usil/oss/common/database/RawMysqlSqlParserTest/mysqlDumpWithSpaceAtTheEnd.sql";
+    String sqlString = new String(Files.readAllBytes(Paths.get(sqlFilePath)));
+
+    RawSqlParser parser = new RawSqlParser();
+    ArrayList<String> blocks = new ArrayList<String>();
+    blocks = parser.parseRawString(sqlString);
+    
+    assertEquals(4, blocks.size());
+    
+    String[] expectedBlock2 = blocks.get(1).split("\\n");
+    assertEquals("/*!50003 CREATE*/ /*!50017 */ /*!50003 TRIGGER before_user_profiles_modified", expectedBlock2[0]);
+    assertEquals("BEFORE UPDATE ON `user_profiles`", expectedBlock2[1]);
+    
+    String[] expectedBlock4 = blocks.get(3).split("\\n");
+    
+    assertEquals("/*!50003 CREATE*/ /*!50017 */ /*!50003 TRIGGER after_user_profiles_modified", expectedBlock4[0]);
+    assertEquals("AFTER UPDATE ON `user_profiles`", expectedBlock4[1]);      
+  }  
+  
   // @Test
   // public void severalDmlScriptWithResultWithoutAnyError() throws Exception {
   //
